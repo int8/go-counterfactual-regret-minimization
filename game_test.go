@@ -1,11 +1,17 @@
 package gocfr
+
 import (
-"testing"
+	"testing"
 )
+
+type MoveTestPair struct {
+	move Move
+	test func(state RhodeIslandGameState) bool
+}
 
 func TestGameCreation(t *testing.T) {
 	deck := CreateFullDeck()
-	root := RhodeIslandGameState{PreFlop, &deck, nil, nil}
+	root := RhodeIslandGameState{Start, &deck, nil, nil}
 	if root.causingAction != nil {
 		t.Error("Root node should not have causing action")
 	}
@@ -14,8 +20,8 @@ func TestGameCreation(t *testing.T) {
 		t.Error("Root node should not have nil parent")
 	}
 
-	if root.round != PreFlop {
-		t.Error("First round of the game should be PreFlop")
+	if root.round != Start {
+		t.Error("Initial round of the game should be Start")
 	}
 
 	if root.IsTerminal() == true {
@@ -23,7 +29,6 @@ func TestGameCreation(t *testing.T) {
 	}
 
 	actions := root.GetAvailableActions()
-
 
 	if actions == nil {
 		t.Error("Game root should have one action available, no actions available")
@@ -34,70 +39,63 @@ func TestGameCreation(t *testing.T) {
 	}
 }
 
-
 func TestGamePlay(t *testing.T) {
 	deck := CreateFullDeck()
 	root := RhodeIslandGameState{Start, &deck, nil, nil}
 
-	if root.round != Start {
-		t.Errorf("Root should be in Start state, but it is in %v state", root.round)
+	movesTestsPairs := []MoveTestPair{
+		{DealPrivateCards, roundCheckFunc(PreFlop)},
+		{Check, roundCheckFunc(PreFlop)},
+		{Check, roundCheckFunc(PreFlop)},
+		{DealPublicCard, roundCheckFunc(Flop)},
+		{Bet, roundCheckFunc(Flop)},
+		{Call, roundCheckFunc(Flop)},
+		{DealPublicCard, roundCheckFunc(Turn)},
+		{Check, roundCheckFunc(Turn)},
+		{Bet, roundCheckFunc(Turn)},
+		{Call, roundCheckFunc(Turn)},
+	}
+	testGamePlayPostMove(root, movesTestsPairs, t)
+
+	movesTestsPairs = []MoveTestPair{
+		{DealPrivateCards, roundCheckFunc(Start)},
+		{Check, roundCheckFunc(PreFlop)},
+		{Check, roundCheckFunc(PreFlop)},
+		{DealPublicCard, roundCheckFunc(PreFlop)},
+		{Bet, roundCheckFunc(Flop)},
+		{Call, roundCheckFunc(Flop)},
+		{DealPublicCard, roundCheckFunc(Flop)},
+		{Check, roundCheckFunc(Turn)},
+		{Bet, roundCheckFunc(Turn)},
+		{Call, roundCheckFunc(Turn)},
 	}
 
-	actions := root.GetAvailableActions()
-	preflopState := root.Play(actions[0])
-	if preflopState.round != PreFlop {
-		t.Errorf("Game should be in PreFlop state, but it is in %v state", preflopState.round)
-	}
-
-	actions = preflopState.GetAvailableActions()
-	actionIndex := selectActionByMove(actions, Check)
-
-	preflopStatePlayerAChecks := preflopState.Play(actions[actionIndex])
-	if preflopStatePlayerAChecks.round != PreFlop {
-		t.Errorf("Game should be in PreFlop state, but it is in %v state", preflopState.round)
-	}
-
-
-	actions = preflopStatePlayerAChecks.GetAvailableActions()
-	actionIndex = selectActionByMove(actions, Check)
-	preflopStatePlayerBChecks := preflopStatePlayerAChecks.Play(actions[actionIndex])
-
-	if preflopStatePlayerBChecks.round != PreFlop {
-		t.Errorf("Game should be in PreFlop state, but it is in %v state", preflopStatePlayerBChecks.round)
-	}
-
-
-	actions = preflopStatePlayerBChecks.GetAvailableActions()
-	actionIndex = selectActionByMove(actions,DealPublicCard)
-	flopState := preflopStatePlayerBChecks.Play(actions[actionIndex])
-
-	if flopState.round != Flop {
-		t.Errorf("Game should be in Flop state, but it is in %v state", flopState.round)
-	}
-
-	actions = flopState.GetAvailableActions()
-	actionIndex = selectActionByMove(actions, Bet)
-	flopStatePlayerABets := flopState.Play(actions[actionIndex])
-
-	if flopStatePlayerABets.round != Flop {
-		t.Errorf("Game should be in Flop state, but it is in %v state", flopStatePlayerABets.round)
-	}
-
-	actions = flopStatePlayerABets.GetAvailableActions()
-	actionIndex = selectActionByMove(actions, Call)
-	flopStatePlayerBCalls := flopStatePlayerABets.Play(actions[actionIndex])
-
-	if flopStatePlayerBCalls.round != Flop {
-		t.Errorf("Game should be in Flop state, but it is in %v state", flopStatePlayerBCalls.round)
-	}
-
-	actions = flopStatePlayerBCalls.GetAvailableActions()
-	actionIndex = selectActionByMove(actions,  DealPublicCard)
-	turnState := flopStatePlayerBCalls.Play(actions[actionIndex])
-
-	if turnState.round != Turn {
-		t.Errorf("Game should be in Turn state, but it is in %v state", turnState.round)
-	}
-
+	testGamePlayPreMove(root, movesTestsPairs, t)
 }
 
+func testGamePlay(node RhodeIslandGameState, movesTestsPairs []MoveTestPair, t *testing.T, mode string) {
+	nodes := []RhodeIslandGameState{node}
+	for i, _ := range movesTestsPairs {
+		actions := nodes[i].GetAvailableActions()
+		actionIndex := selectActionByMove(actions, movesTestsPairs[i].move)
+		child := nodes[i].Play(actions[actionIndex])
+		nodes = append(nodes, child)
+
+		if (mode == "post" && movesTestsPairs[i].test(child)) || (mode == "pre" && movesTestsPairs[i].test(nodes[i])) {
+			t.Errorf("function numer %v did not pass", i)
+		}
+
+	}
+}
+
+func testGamePlayPreMove(node RhodeIslandGameState, movesTestsPairs []MoveTestPair, t *testing.T) {
+	testGamePlay(node, movesTestsPairs, t, "pre")
+}
+
+func testGamePlayPostMove(node RhodeIslandGameState, movesTestsPairs []MoveTestPair, t *testing.T) {
+	testGamePlay(node, movesTestsPairs, t, "post")
+}
+
+func roundCheckFunc(expectedRound Round) func(node RhodeIslandGameState) bool {
+	return func(node RhodeIslandGameState) bool { return node.round != expectedRound }
+}

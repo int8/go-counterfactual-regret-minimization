@@ -16,3 +16,11 @@ func selectActionByMove(actions []Action, move Move ) int  {
 	}
 	return -1
 }
+
+func countPriorRaises(node RhodeIslandGameState) int {
+	if &node == nil || node.causingAction.move != Raise {
+		return 0
+	} else {
+		return 1 + countPriorRaises(*node.parent)
+	}
+}

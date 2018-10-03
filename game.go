@@ -59,13 +59,15 @@ func (node *RhodeIslandGameState) Play(action Action) RhodeIslandGameState {
 
 func (node *RhodeIslandGameState) GetAvailableActions() []Action {
 
-	if node.parent == nil {
+	// actions for root of the game tree - first action is a chance action: dealing private cards
+	if node.round == Start {
 		dealPrivateCards := Action{player: Chance, move: DealPrivateCards}
 		return []Action{dealPrivateCards}
 	}
 
-	bettingRoundEnded := (node.causingAction.move == Call || node.causingAction.move == Fold)
-	bettingRoundEnded = bettingRoundEnded || (node.causingAction.move == Check && node.parent.causingAction.player != Chance)
+	// whenever betting roung is over (CALL OR FOLD OR CHECK->CHECK) deal public cards or end
+	bettingRoundEnded := node.causingAction.move == Call || node.causingAction.move == Fold
+	bettingRoundEnded = bettingRoundEnded || (node.causingAction.move == Check && node.parent.causingAction.move == Check)
  	if bettingRoundEnded {
  		if node.round != Turn {
  			dealPublicCard := Action{Chance, DealPublicCard}
@@ -74,13 +76,14 @@ func (node *RhodeIslandGameState) GetAvailableActions() []Action {
 			return nil
 		}
 	}
-
-	if node.causingAction.move == Check && node.parent.causingAction.player == Chance {
+	// single check implies BET or CHECK
+	if node.causingAction.move == Check && node.parent.causingAction.move != Check {
 		bet := Action{-node.causingAction.player, Bet}
 		check := Action{-node.causingAction.player, Check}
 		return []Action{bet, check}
 	}
 
+	// you can only FOLD, RAISE or CALL on BET
 	if node.causingAction.move == Bet {
 		call := Action{-node.causingAction.player, Call}
 		fold := Action{-node.causingAction.player, Fold}
@@ -88,17 +91,10 @@ func (node *RhodeIslandGameState) GetAvailableActions() []Action {
 		return []Action{call, fold, raise}
 	}
 
+	// if RAISE, you can CALL FOLD or RAISE (unless there has been 6 prior raises - 3 for each player)
 	if node.causingAction.move == Raise {
-		previousRaises := func(node RhodeIslandGameState) int{
-			count := 0
-			for (node.causingAction.move != Raise) {
-				node = *node.parent
-				count++
-			}
-			return count
-		}(*node)
-
-		if previousRaises < 6 {
+		if countPriorRaises(*node) < 6 {
+			// allow raise if there has been less than 6 raises so far
 			call := Action{-node.causingAction.player, Call}
 			fold := Action{-node.causingAction.player, Fold}
 			raise := Action{-node.causingAction.player, Raise}
