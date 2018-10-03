@@ -1,10 +1,10 @@
 package gocfr
 
 const (
-	Hearts CardSuit = iota // ♥
-	Diamonds // ♦
-	Spades   // ♠
-	Clubs    // ♣
+	Hearts   CardSuit = iota // ♥
+	Diamonds                 // ♦
+	Spades                   // ♠
+	Clubs                    // ♣
 )
 
 const (
@@ -23,7 +23,6 @@ const (
 	Ace
 )
 
-
 const (
 	Check Move = iota
 	Bet
@@ -35,10 +34,9 @@ const (
 )
 
 const (
-	Chance Player = 0
+	Chance  Player = 0
 	PlayerA Player = 1
-	PlayerB = - PlayerA
-
+	PlayerB        = -PlayerA
 )
 
 const (
@@ -48,4 +46,3 @@ const (
 	Turn
 	End
 )
-

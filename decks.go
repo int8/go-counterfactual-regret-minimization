@@ -1,14 +1,13 @@
 package gocfr
 
 import (
-	"math/rand"
 	"fmt"
+	"math/rand"
 	"strconv"
 )
 
 type CardName uint8
 type CardSuit uint8
-
 
 type Card struct {
 	name CardName
@@ -21,8 +20,8 @@ type Deck interface {
 }
 
 type FullDeck struct {
-	Cards []Card
-	shuffleOrder []int
+	Cards            []Card
+	shuffleOrder     []int
 	currentCardIndex int
 }
 
@@ -31,9 +30,9 @@ func CreateFullDeck() FullDeck {
 	suits := [4]CardSuit{Hearts, Diamonds, Spades, Clubs}
 	fullDeck := *new(FullDeck)
 
-	for _, suit := range(suits) {
-		for _, name := range(names) {
-			fullDeck.Cards = append(fullDeck.Cards, Card{name, suit })
+	for _, suit := range suits {
+		for _, name := range names {
+			fullDeck.Cards = append(fullDeck.Cards, Card{name, suit})
 		}
 	}
 	fullDeck.shuffleOrder = makeRange(0, 51)
@@ -44,13 +43,12 @@ func CreateFullDeck() FullDeck {
 func (d *FullDeck) Shuffle() {
 	offset := d.currentCardIndex
 	order := d.shuffleOrder
-	rand.Shuffle(51 - offset, func(i, j int) {
-		order[offset + i], order[offset + j] = order[offset +j], order[offset + i]
+	rand.Shuffle(51-offset, func(i, j int) {
+		order[offset+i], order[offset+j] = order[offset+j], order[offset+i]
 	})
 }
 
-
-func (d *FullDeck) DealNextCard() Card{
+func (d *FullDeck) DealNextCard() Card {
 	// once card is dealt make sure deck is not empty /  shuffled
 	defer func() {
 		d.currentCardIndex = (d.currentCardIndex + 1) % 52
@@ -65,7 +63,6 @@ func (d *FullDeck) DealNextCard() Card{
 func (d *FullDeck) CardsLeft() int {
 	return 52 - d.currentCardIndex
 }
-
 
 func (c Card) String() string {
 	return fmt.Sprintf("%v%v", c.suit, c.name)

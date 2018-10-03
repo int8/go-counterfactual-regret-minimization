@@ -8,7 +8,7 @@ func makeRange(min, max int) []int {
 	return a
 }
 
-func selectActionByMove(actions []Action, move Move ) int  {
+func selectActionByMove(actions []Action, move Move) int {
 	for i, a := range actions {
 		if a.move == move {
 			return i

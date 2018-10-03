@@ -1,7 +1,8 @@
 package gocfr
+
 import (
-	"testing"
 	"reflect"
+	"testing"
 )
 
 func TestFullDeckCardsCount(t *testing.T) {
@@ -15,22 +16,21 @@ func TestFullDeckCardsCount(t *testing.T) {
 		t.Errorf("Full deck should have 52 cards left after initialization but have %v", fullDeck.CardsLeft())
 	}
 
-	for i := range(fullDeck.Cards) {
-		if fullDeck.CardsLeft() != 52 - i  {
-			t.Errorf("Full deck should have %v cards left dealing %v card but have %v", 52 - i, i, fullDeck.CardsLeft())
+	for i := range fullDeck.Cards {
+		if fullDeck.CardsLeft() != 52-i {
+			t.Errorf("Full deck should have %v cards left dealing %v card but have %v", 52-i, i, fullDeck.CardsLeft())
 		}
 		fullDeck.DealNextCard()
 	}
 
 }
 
-
 func TestFullDeckCardsShuffling(t *testing.T) {
 	fullDeck := CreateFullDeck()
 	orderBeforeShuffling := make([]int, 52, 52)
 	copy(orderBeforeShuffling, fullDeck.shuffleOrder)
 
-	for range(fullDeck.Cards) {
+	for range fullDeck.Cards {
 		fullDeck.DealNextCard()
 	}
 
@@ -39,22 +39,20 @@ func TestFullDeckCardsShuffling(t *testing.T) {
 	}
 }
 
-
 func TestIfAllCardsAreDealt(t *testing.T) {
 	fullDeck := CreateFullDeck()
 	cardsMap := map[Card]bool{}
-	for range(fullDeck.Cards) {
+	for range fullDeck.Cards {
 		cardsMap[fullDeck.DealNextCard()] = true
 	}
 
 	names := [13]CardName{C2, C3, C4, C5, C6, C7, C8, C9, C10, Jack, Queen, King, Ace}
 	suits := [4]CardSuit{Hearts, Diamonds, Spades, Clubs}
 
-
-	for _, suit := range(suits) {
-		for _, name := range(names) {
-			if _, ok := cardsMap[Card{name, suit }]; !ok {
-				t.Errorf("%v has not been dealt but is supposed to", Card{name, suit })
+	for _, suit := range suits {
+		for _, name := range names {
+			if _, ok := cardsMap[Card{name, suit}]; !ok {
+				t.Errorf("%v has not been dealt but is supposed to", Card{name, suit})
 			}
 		}
 	}

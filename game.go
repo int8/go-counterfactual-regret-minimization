@@ -8,7 +8,6 @@ type Player int8
 type Move int8
 type Round int8
 
-
 func (round Round) NextRound() Round {
 	switch round {
 	case Start:
@@ -23,7 +22,7 @@ func (round Round) NextRound() Round {
 
 type Action struct {
 	player Player
-	move Move
+	move   Move
 }
 
 type TwoPlayersGameNode interface {
@@ -34,12 +33,11 @@ type TwoPlayersGameNode interface {
 
 //TODO: Remember to model players and include them
 type RhodeIslandGameState struct {
-	round Round
-	deck *FullDeck
-	parent *RhodeIslandGameState
+	round         Round
+	deck          *FullDeck
+	parent        *RhodeIslandGameState
 	causingAction *Action
 }
-
 
 func (node *RhodeIslandGameState) Play(action Action) RhodeIslandGameState {
 	round := node.round
@@ -53,7 +51,7 @@ func (node *RhodeIslandGameState) Play(action Action) RhodeIslandGameState {
 		// TODO: deal public cards
 	}
 
-	child := RhodeIslandGameState{round, node.deck,node, &action }
+	child := RhodeIslandGameState{round, node.deck, node, &action}
 	return child
 }
 
@@ -68,9 +66,9 @@ func (node *RhodeIslandGameState) GetAvailableActions() []Action {
 	// whenever betting roung is over (CALL OR FOLD OR CHECK->CHECK) deal public cards or end
 	bettingRoundEnded := node.causingAction.move == Call || node.causingAction.move == Fold
 	bettingRoundEnded = bettingRoundEnded || (node.causingAction.move == Check && node.parent.causingAction.move == Check)
- 	if bettingRoundEnded {
- 		if node.round != Turn {
- 			dealPublicCard := Action{Chance, DealPublicCard}
+	if bettingRoundEnded {
+		if node.round != Turn {
+			dealPublicCard := Action{Chance, DealPublicCard}
 			return []Action{dealPublicCard}
 		} else {
 			return nil
@@ -115,12 +113,10 @@ func (node *RhodeIslandGameState) GetAvailableActions() []Action {
 	return nil
 }
 
-
 func (node *RhodeIslandGameState) IsTerminal() bool {
 	actions := node.GetAvailableActions()
 	return actions == nil
 }
-
 
 func (a Action) String() string {
 	return fmt.Sprintf("%v:%v", a.player, a.move)
@@ -171,5 +167,3 @@ func (r Round) String() string {
 	}
 	return "(?)"
 }
-
-
