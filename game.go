@@ -9,97 +9,120 @@ type Move int8
 type Round int8
 
 
+func (round Round) NextRound() Round {
+	switch round {
+	case Start:
+		return PreFlop
+	case PreFlop:
+		return Flop
+	case Flop:
+		return Turn
+	}
+	return End
+}
+
 type Action struct {
 	player Player
 	move Move
 }
 
-type TwoPlayerGameNode interface {
-	IsTerminal() (bool, error)
-	GetAvailableActions() ([]Action, error)
-	Play(Action) TwoPlayerGameNode
+type TwoPlayersGameNode interface {
+	IsTerminal() bool
+	GetAvailableActions() []Action
+	Play(Action) TwoPlayersGameNode
 }
 
-type RhodeIslandGameNode struct {
+//TODO: Remember to model players and include them
+type RhodeIslandGameState struct {
 	round Round
-	deck FullDeck
-	parent *RhodeIslandGameNode
-	CausingAction *Action
+	deck *FullDeck
+	parent *RhodeIslandGameState
+	causingAction *Action
 }
 
 
-func createRhodeIslandGameRoot() RhodeIslandGameNode {
-	deck := CreateFullDeck()
-	root := RhodeIslandGameNode{PreFlop, deck, nil, nil}
-	return root
+func (node *RhodeIslandGameState) Play(action Action) RhodeIslandGameState {
+	round := node.round
+	if action.move == DealPrivateCards {
+		// TODO: deal private cards here
+		round = round.NextRound()
+	}
+
+	if action.move == DealPublicCard {
+		round = round.NextRound()
+		// TODO: deal public cards
+	}
+
+	child := RhodeIslandGameState{round, node.deck,node, &action }
+	return child
 }
 
-func (node RhodeIslandGameNode) GetAvailableActions() ([]Action, error){
+func (node *RhodeIslandGameState) GetAvailableActions() []Action {
 
 	if node.parent == nil {
 		dealPrivateCards := Action{player: Chance, move: DealPrivateCards}
-		return []Action{dealPrivateCards}, nil
+		return []Action{dealPrivateCards}
 	}
 
-	roundEnded := (node.CausingAction.move == Call || node.CausingAction.move == Fold)
-	roundEnded = roundEnded && (node.CausingAction.move == Check && node.parent.CausingAction.player != Chance)
- 	if roundEnded {
+	bettingRoundEnded := (node.causingAction.move == Call || node.causingAction.move == Fold)
+	bettingRoundEnded = bettingRoundEnded || (node.causingAction.move == Check && node.parent.causingAction.player != Chance)
+ 	if bettingRoundEnded {
  		if node.round != Turn {
  			dealPublicCard := Action{Chance, DealPublicCard}
-			return []Action{dealPublicCard}, nil
+			return []Action{dealPublicCard}
 		} else {
-			return nil, nil
+			return nil
 		}
 	}
 
-	if node.CausingAction.move == Check && node.parent.CausingAction.player == Chance {
-		bet := Action{-node.CausingAction.player, Bet}
-		check := Action{-node.CausingAction.player, Check}
-		return []Action{bet, check}, nil
+	if node.causingAction.move == Check && node.parent.causingAction.player == Chance {
+		bet := Action{-node.causingAction.player, Bet}
+		check := Action{-node.causingAction.player, Check}
+		return []Action{bet, check}
 	}
 
-	if node.CausingAction.move == Bet {
-		call := Action{-node.CausingAction.player, Call}
-		fold := Action{-node.CausingAction.player, Fold}
-		raise := Action{-node.CausingAction.player, Raise}
-		return []Action{call, fold, raise}, nil
+	if node.causingAction.move == Bet {
+		call := Action{-node.causingAction.player, Call}
+		fold := Action{-node.causingAction.player, Fold}
+		raise := Action{-node.causingAction.player, Raise}
+		return []Action{call, fold, raise}
 	}
 
-	if node.CausingAction.move == Raise {
-		previousRaises := func(node RhodeIslandGameNode) int{
+	if node.causingAction.move == Raise {
+		previousRaises := func(node RhodeIslandGameState) int{
 			count := 0
-			for (node.CausingAction.move != Raise) {
+			for (node.causingAction.move != Raise) {
 				node = *node.parent
 				count++
 			}
 			return count
-		}(node)
+		}(*node)
 
 		if previousRaises < 6 {
-			call := Action{-node.CausingAction.player, Call}
-			fold := Action{-node.CausingAction.player, Fold}
-			raise := Action{-node.CausingAction.player, Raise}
-			return []Action{call, fold, raise}, nil
+			call := Action{-node.causingAction.player, Call}
+			fold := Action{-node.causingAction.player, Fold}
+			raise := Action{-node.causingAction.player, Raise}
+			return []Action{call, fold, raise}
 		} else {
-			call := Action{-node.CausingAction.player, Call}
-			fold := Action{-node.CausingAction.player, Fold}
-			return []Action{call, fold}, nil
+			call := Action{-node.causingAction.player, Call}
+			fold := Action{-node.causingAction.player, Fold}
+			return []Action{call, fold}
 		}
 	}
 
-	if node.CausingAction.move == DealPrivateCards {
+	if node.causingAction.move == DealPrivateCards || node.causingAction.move == DealPublicCard {
 		bet := Action{PlayerA, Bet}
 		check := Action{PlayerA, Check}
-		return []Action{bet, check}, nil
+		return []Action{bet, check}
 	}
 
-	return nil, fmt.Errorf("No available actions computed, something is very wrong :)")
+	return nil
 }
 
 
-func (node RhodeIslandGameNode) IsTerminal() bool {
-	actions, err := node.GetAvailableActions()
-	return (actions == nil && err == nil)
+func (node *RhodeIslandGameState) IsTerminal() bool {
+	actions := node.GetAvailableActions()
+	return actions == nil
 }
 
 
@@ -135,6 +158,22 @@ func (m Move) String() string {
 		return "DealPublicCard"
 	}
 	return "Undefined"
+}
+
+func (r Round) String() string {
+	switch r {
+	case Start:
+		return "Start"
+	case End:
+		return "End"
+	case PreFlop:
+		return "Preflop"
+	case Turn:
+		return "Turn"
+	case Flop:
+		return "Flop"
+	}
+	return "(?)"
 }
 
 

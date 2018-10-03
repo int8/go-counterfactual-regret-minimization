@@ -42,8 +42,10 @@ const (
 )
 
 const (
-	PreFlop Round = iota
+	Start Round = iota
+	PreFlop
 	Flop
 	Turn
+	End
 )
 
