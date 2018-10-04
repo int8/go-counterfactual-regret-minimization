@@ -31,7 +31,6 @@ const (
 	Ace
 )
 
-
 type Card struct {
 	name CardName
 	suit CardSuit

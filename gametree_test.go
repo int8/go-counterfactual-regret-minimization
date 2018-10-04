@@ -92,7 +92,6 @@ func TestGamePlay_Max6Raises(t *testing.T) {
 
 	testGamePlay(root, movesTestsPairs, t)
 
-
 	movesTestsPairs = []MoveTestsTriple{
 		{DealPrivateCards, roundCheckFunc(Start), roundCheckFunc(PreFlop)},
 		{Bet,roundCheckFunc(PreFlop), roundCheckFunc(PreFlop)},
@@ -145,7 +144,7 @@ func testGamePlay(node RhodeIslandGameState, movesTests []MoveTestsTriple, t *te
 	for i, _ := range movesTests {
 		actions := nodes[i].GetAvailableActions()
 		actionIndex := selectActionByMove(actions, movesTests[i].move)
-		child := nodes[i].Play(actions[actionIndex], nil)
+		child := nodes[i].Play(actions[actionIndex])
 		nodes = append(nodes, child)
 
 		if ! movesTests[i].preTest(nodes[i]) {

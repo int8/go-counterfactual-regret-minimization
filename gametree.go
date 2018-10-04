@@ -26,17 +26,15 @@ func (node *RhodeIslandGameState) NextToMove() Player {
 	}
 }
 
-func (node *RhodeIslandGameState) Play(action Action, table *PokerTable) RhodeIslandGameState {
+func (node *RhodeIslandGameState) Play(action Action) RhodeIslandGameState {
 
 	round := node.round
 	if action.move == DealPrivateCards {
-		// TODO: deal private cards here
 		round = round.NextRound()
 	}
 
 	if action.move == DealPublicCard {
 		round = round.NextRound()
-		// TODO: deal public cards
 	}
 
 	child := RhodeIslandGameState{round, node.deck, node, &action, nil}
