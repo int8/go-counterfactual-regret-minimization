@@ -7,11 +7,26 @@ const (
 	PlayerB        = -PlayerA
 )
 
-type HeadsUpPokerPlayer struct {
+type HeadsUpPokerPlayer interface {
+	Opponent() HeadsUpPokerPlayer
+	CollectPrivateCard(card Card)
+}
+
+type RhodeIslandPokerPlayer struct {
+	privateCard Card
 	player Player
 	stack float64
-	opponent *HeadsUpPokerPlayer
+	opponent *RhodeIslandPokerPlayer
 }
+
+func (player *RhodeIslandPokerPlayer) Opponent() *RhodeIslandPokerPlayer{
+	return player.opponent
+}
+
+func (player *RhodeIslandPokerPlayer) CollectPrivateCard(card Card) {
+	player.privateCard = card
+}
+
 
 func (p Player) String() string {
 	if p == PlayerA {

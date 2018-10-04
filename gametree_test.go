@@ -118,7 +118,6 @@ func TestGamePlay_Max6Raises(t *testing.T) {
 }
 
 
-//func(state RhodeIslandGameState) bool {return true}
 func TestGamePlay_CheckIfPlayerToMoveCorrect(t *testing.T) {
 	deck := CreateFullDeck()
 	root := RhodeIslandGameState{Start, &deck, nil, nil, nil}
@@ -146,7 +145,7 @@ func testGamePlay(node RhodeIslandGameState, movesTests []MoveTestsTriple, t *te
 	for i, _ := range movesTests {
 		actions := nodes[i].GetAvailableActions()
 		actionIndex := selectActionByMove(actions, movesTests[i].move)
-		child := nodes[i].Play(actions[actionIndex])
+		child := nodes[i].Play(actions[actionIndex], nil)
 		nodes = append(nodes, child)
 
 		if ! movesTests[i].preTest(nodes[i]) {

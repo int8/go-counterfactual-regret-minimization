@@ -26,7 +26,7 @@ func (node *RhodeIslandGameState) NextToMove() Player {
 	}
 }
 
-func (node *RhodeIslandGameState) Play(action Action) RhodeIslandGameState {
+func (node *RhodeIslandGameState) Play(action Action, table *PokerTable) RhodeIslandGameState {
 
 	round := node.round
 	if action.move == DealPrivateCards {
