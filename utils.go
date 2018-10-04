@@ -24,3 +24,24 @@ func countPriorRaises(node RhodeIslandGameState) int {
 		return 1 + countPriorRaises(*node.parent)
 	}
 }
+
+func roundCheckFunc(expectedRound Round) func(node RhodeIslandGameState) bool {
+	return func(node RhodeIslandGameState) bool { return node.round == expectedRound }
+}
+
+func GameEndFunc() func(state RhodeIslandGameState) bool {
+	return func(state RhodeIslandGameState) bool { return state.IsTerminal()}
+}
+
+func NoRaiseAvailable() func(state RhodeIslandGameState) bool {
+	return func(state RhodeIslandGameState) bool {
+		actions:= state.GetAvailableActions()
+		return selectActionByMove(actions, Raise) == -1
+	}
+}
+
+func playerToMoveFunc(player Player) func(state RhodeIslandGameState) bool {
+	return func(state RhodeIslandGameState) bool {
+		return state.NextToMove() == player
+	}
+}

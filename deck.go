@@ -7,7 +7,30 @@ import (
 )
 
 type CardName uint8
+const (
+	Hearts   CardSuit = iota // ♥
+	Diamonds                 // ♦
+	Spades                   // ♠
+	Clubs                    // ♣
+)
+
 type CardSuit uint8
+const (
+	C2 CardName = 2 + iota
+	C3
+	C4
+	C5
+	C6
+	C7
+	C8
+	C9
+	C10
+	Jack
+	Queen
+	King
+	Ace
+)
+
 
 type Card struct {
 	name CardName
