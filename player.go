@@ -1,11 +1,12 @@
 package gocfr
 
-type PlayerIdentifier int8
+type ActionMakerIdentifier int8
 
 const (
-	PlayerA  PlayerIdentifier = 1
-	PlayerB                   = -PlayerA
-	ChanceId                  = 0
+	PlayerA       ActionMakerIdentifier = 1
+	PlayerB                             = -PlayerA
+	ChanceId                            = 0
+	NoActionMaker                       = 100
 )
 
 type ActionMaker interface {
@@ -14,6 +15,7 @@ type ActionMaker interface {
 }
 
 type Chance struct {
+	id   ActionMakerIdentifier
 	deck FullDeck
 }
 
@@ -34,24 +36,39 @@ func (chance *Chance) GetAvailableMoves(state *RhodeIslandGameState) []Move {
 	if state.round == Start {
 		return []Move{DealPrivateCards}
 	}
-	return []Move{DealPublicCard}
+	if !state.terminal {
+		return []Move{DealPublicCard}
+	}
+	return nil
 }
 
 type PokerPlayer struct {
-	id             PlayerIdentifier
+	id             ActionMakerIdentifier
 	privateCards   []Card
 	stack          float64
 	availableMoves []Move
 }
 
 func (player *PokerPlayer) Act(state *RhodeIslandGameState, move Move) RhodeIslandGameState {
-	if move == Fold {
-		return state.CreateChild(state.round, move, player.Opponent(state).(*PokerPlayer).id, true)
+
+	bothChecked := (move == Check && state.causingMove == Check)
+	turn := state.round == Turn
+	call := move == Call
+	fold := move == Fold
+
+	if fold || (turn && (call || bothChecked)) {
+		return state.CreateChild(state.round, move, NoActionMaker, true)
 	}
+
+	if call || bothChecked {
+		return state.CreateChild(state.round, move, ChanceId, false)
+	}
+
+	return state.CreateChild(state.round, move, player.Opponent(), false)
 }
 
-func (player *PokerPlayer) Opponent(state *RhodeIslandGameState) ActionMaker {
-	return state.actors[-player.id]
+func (player *PokerPlayer) Opponent() ActionMakerIdentifier {
+	return -player.id
 }
 
 func (player *PokerPlayer) CollectPrivateCard(card Card) {
@@ -85,14 +102,8 @@ func (player *PokerPlayer) computeAvailableActions(state *RhodeIslandGameState) 
 		return
 	}
 
-	// you can only FOLD, RAISE or CALL on BET
-	if state.causingMove == Bet {
-		player.availableMoves = []Move{Call, Fold, Raise}
-		return
-	}
-
-	// if RAISE, you can CALL FOLD or RAISE (unless there has been 6 prior raises - 3 for each player)
-	if state.causingMove == Raise {
+	// if RAISE/BET, you can CALL FOLD or RAISE (unless there has been 6 prior raises - 3 for each player)
+	if state.causingMove == Bet || state.causingMove == Raise {
 		if countPriorRaises(*state) < 6 {
 			// allow raise if there has been less than 6 raises so far
 			player.availableMoves = []Move{Call, Fold, Raise}
