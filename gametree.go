@@ -1,125 +1,33 @@
 package gocfr
 
-
-type TwoPlayersGameNode interface {
-	IsTerminal() bool
-	GetAvailableActions() []Action
-	Play(Action) TwoPlayersGameNode
-	NextToMove() Player
-}
-
-//TODO: Remember to model players and include them
+// RhodeIslandGameState
 type RhodeIslandGameState struct {
-	round         Round
-	deck          *FullDeck
-	parent        *RhodeIslandGameState
-	causingAction *Action
-	availableActionsCache *ActionsCache
+	round       Round
+	parent      *RhodeIslandGameState
+	causingMove Move
+	table       PokerTable
+	actors      map[PlayerIdentifier]ActionMaker
+	nextToMove  PlayerIdentifier
+	terminal    bool
 }
 
-func (node *RhodeIslandGameState) NextToMove() Player {
-	availableActions := node.GetAvailableActions()
-	if availableActions == nil {
-		return Environment
-	} else {
-		return availableActions[0].player
-	}
+func CreateRoot(playerAStack float64, playerBStack float64) RhodeIslandGameState {
+
+	actors := map[PlayerIdentifier]ActionMaker{PlayerA: &PokerPlayer{}, PlayerB: &PokerPlayer{}, ChanceId: &Chance{}}
+	table := PokerTable{potSize: 0, publicCards: []Card{}}
+
+	return RhodeIslandGameState{round: Start, table: table,
+		actors: actors, nextToMove: ChanceId, causingMove: NoMove}
 }
 
-func (node *RhodeIslandGameState) Play(action Action) RhodeIslandGameState {
-
-	round := node.round
-	if action.move == DealPrivateCards {
-		round = round.NextRound()
-	}
-
-	if action.move == DealPublicCard {
-		round = round.NextRound()
-	}
-
-	child := RhodeIslandGameState{round, node.deck, node, &action, nil}
+func (node *RhodeIslandGameState) CreateChild(round Round, move Move, nextToMove PlayerIdentifier, terminal bool) RhodeIslandGameState {
+	child := RhodeIslandGameState{round: round,
+		parent: node, causingMove: move, terminal: terminal,
+		table: node.table, actors: node.actors, nextToMove: nextToMove}
 	return child
 }
 
-func (node *RhodeIslandGameState) computeAvailableActionsCache() {
-	if node.availableActionsCache != nil {
-		return
-	}
-
-	node.availableActionsCache = &ActionsCache{ nil}
-
-	if node.round == Start {
-		dealPrivateCards := Action{player: Environment, move: DealPrivateCards}
-		node.availableActionsCache.actions = []Action{dealPrivateCards}
-		return
-	}
-
-	// if any player folds - no further action - game ends
-	if node.causingAction.move == Fold {
-		node.availableActionsCache.actions = nil
-		return
-	}
-
-	// whenever betting roung is over (CALL OR CHECK->CHECK) deal public cards or end if turn
-	bettingRoundEnded := node.causingAction.move == Call  || (node.causingAction.move == Check && node.parent.causingAction.move == Check)
-	if bettingRoundEnded {
-		if node.round != Turn {
-			dealPublicCard := Action{Environment, DealPublicCard}
-			node.availableActionsCache.actions = []Action{dealPublicCard}
-		} else {
-			node.availableActionsCache.actions = nil
-		}
-		return
-	}
-	// single check implies BET or CHECK
-	if node.causingAction.move == Check && node.parent.causingAction.move != Check {
-		bet := Action{-node.causingAction.player, Bet}
-		check := Action{-node.causingAction.player, Check}
-		node.availableActionsCache.actions = []Action{bet, check}
-		return
-	}
-
-	// you can only FOLD, RAISE or CALL on BET
-	if node.causingAction.move == Bet {
-		call := Action{-node.causingAction.player, Call}
-		fold := Action{-node.causingAction.player, Fold}
-		raise := Action{-node.causingAction.player, Raise}
-		node.availableActionsCache.actions = []Action{call, fold, raise}
-		return
-	}
-
-	// if RAISE, you can CALL FOLD or RAISE (unless there has been 6 prior raises - 3 for each player)
-	if node.causingAction.move == Raise {
-		if countPriorRaises(*node) < 6 {
-			// allow raise if there has been less than 6 raises so far
-			call := Action{-node.causingAction.player, Call}
-			fold := Action{-node.causingAction.player, Fold}
-			raise := Action{-node.causingAction.player, Raise}
-			node.availableActionsCache.actions = []Action{call, fold, raise}
-		} else {
-			call := Action{-node.causingAction.player, Call}
-			fold := Action{-node.causingAction.player, Fold}
-			node.availableActionsCache.actions = []Action{call, fold}
-		}
-		return
-	}
-
-	if node.causingAction.move == DealPrivateCards || node.causingAction.move == DealPublicCard {
-		bet := Action{PlayerA, Bet}
-		check := Action{PlayerA, Check}
-		node.availableActionsCache.actions = []Action{bet, check}
-		return
-	}
-
-	node.availableActionsCache.actions = nil
-}
-
-func (node *RhodeIslandGameState) GetAvailableActions() []Action {
-	node.computeAvailableActionsCache()
-	return node.availableActionsCache.actions
-}
-
 func (node *RhodeIslandGameState) IsTerminal() bool {
-	actions := node.GetAvailableActions()
+	actions := node.actors[node.nextToMove].GetAvailableMoves(node)
 	return actions == nil
 }

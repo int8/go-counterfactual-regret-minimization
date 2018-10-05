@@ -1,20 +1,16 @@
 package gocfr
 
-type PokerTable interface {
-	AddToPot(amount float64)
-	DropPublicCard(card Card)
-}
 
-type RhodeIslandPokerTable struct {
+type PokerTable struct {
 	potSize float64
 	publicCards []Card
 }
 
-func (table *RhodeIslandPokerTable) AddToPot(amount float64) {
+func (table *PokerTable) AddToPot(amount float64) {
 	table.potSize += amount
 }
 
-func (table *RhodeIslandPokerTable) DropPublicCard(card Card) {
+func (table *PokerTable) DropPublicCard(card Card) {
 	table.publicCards = append(table.publicCards, card)
 }
 
