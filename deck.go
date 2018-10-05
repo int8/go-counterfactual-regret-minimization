@@ -7,6 +7,7 @@ import (
 )
 
 type CardName uint8
+
 const (
 	Hearts   CardSuit = iota // ♥
 	Diamonds                 // ♦
@@ -15,6 +16,7 @@ const (
 )
 
 type CardSuit uint8
+
 const (
 	C2 CardName = 2 + iota
 	C3
@@ -58,6 +60,7 @@ func CreateFullDeck() FullDeck {
 		}
 	}
 	fullDeck.shuffleOrder = makeRange(0, 51)
+	fullDeck.Shuffle()
 	fullDeck.currentCardIndex = 0
 	return fullDeck
 }
