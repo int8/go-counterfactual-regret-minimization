@@ -27,10 +27,10 @@ func CreateRoot(playerAStack float64, playerBStack float64) RhodeIslandGameState
 		actors: actors, nextToMove: ChanceId, causingMove: NoMove}
 }
 
-func (node *RhodeIslandGameState) CreateChild(round Round, move Move, nextToMove ActionMakerIdentifier, terminal bool) RhodeIslandGameState {
+func (node *RhodeIslandGameState) CreateChild(round Round, move Move, table PokerTable, nextToMove ActionMakerIdentifier, terminal bool) RhodeIslandGameState {
 	child := RhodeIslandGameState{round: round,
 		parent: node, causingMove: move, terminal: terminal,
-		table: node.table, actors: node.actors, nextToMove: nextToMove}
+		table: table, actors: node.actors, nextToMove: nextToMove}
 	return child
 }
 

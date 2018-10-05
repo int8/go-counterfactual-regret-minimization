@@ -19,16 +19,32 @@ type Chance struct {
 	deck FullDeck
 }
 
-func (chance *Chance) Act(state *RhodeIslandGameState, move Move) RhodeIslandGameState {
-	child := state.CreateChild(state.round.NextRound(), move, PlayerA, false)
+func (chance *Chance) Act(state *RhodeIslandGameState, move Move) (child RhodeIslandGameState) {
+
 	if move == DealPublicCard {
-		child.table.DropPublicCard(chance.deck.DealNextCard())
+		child = chance.dealPublicCard(state, move)
 	}
 
 	if move == DealPrivateCards {
-		child.actors[PlayerA].(*PokerPlayer).CollectPrivateCard(chance.deck.DealNextCard())
-		child.actors[PlayerB].(*PokerPlayer).CollectPrivateCard(chance.deck.DealNextCard())
+		child = chance.dealPrivateCards(state, move)
 	}
+	return child
+}
+
+func (chance *Chance) dealPublicCard(state *RhodeIslandGameState, move Move) RhodeIslandGameState {
+	child := state.CreateChild(state.round.NextRound(), move, state.table, PlayerA, false)
+	child.table.DropPublicCard(chance.deck.DealNextCard())
+	return child
+}
+
+func (chance *Chance) dealPrivateCards(state *RhodeIslandGameState, move Move) RhodeIslandGameState {
+	table := state.table
+	state.actors[PlayerA].(*PokerPlayer).stack -= Ante
+	state.actors[PlayerB].(*PokerPlayer).stack -= Ante
+	table.potSize += 2 * Ante
+	child := state.CreateChild(state.round.NextRound(), move, table, PlayerA, false)
+	child.actors[PlayerA].(*PokerPlayer).CollectPrivateCard(chance.deck.DealNextCard())
+	child.actors[PlayerB].(*PokerPlayer).CollectPrivateCard(chance.deck.DealNextCard())
 	return child
 }
 
@@ -51,20 +67,34 @@ type PokerPlayer struct {
 
 func (player *PokerPlayer) Act(state *RhodeIslandGameState, move Move) RhodeIslandGameState {
 
-	bothChecked := (move == Check && state.causingMove == Check)
-	turn := state.round == Turn
-	call := move == Call
-	fold := move == Fold
+	table := state.table
+	var betSize float64
 
-	if fold || (turn && (call || bothChecked)) {
-		return state.CreateChild(state.round, move, NoActionMaker, true)
+	if state.round < Flop {
+		betSize = PreFlopBetSize
+	} else {
+		betSize = PostFlopBetSize
 	}
 
-	if call || bothChecked {
-		return state.CreateChild(state.round, move, ChanceId, false)
+	if move == Call || move == Bet {
+		player.stack -= betSize
+		table.potSize += betSize
 	}
 
-	return state.CreateChild(state.round, move, player.Opponent(), false)
+	if move == Raise {
+		player.stack -= 2 * betSize
+		table.potSize += 2 * betSize
+	}
+
+	if move == Fold || (state.round == Turn && (move == Call || (move == Check && state.causingMove == Check))) {
+		return state.CreateChild(state.round, move, table, NoActionMaker, true)
+	}
+
+	if move == Call || (move == Check && state.causingMove == Check) {
+		return state.CreateChild(state.round, move, table, ChanceId, false)
+	}
+
+	return state.CreateChild(state.round, move, table, player.Opponent(), false)
 }
 
 func (player *PokerPlayer) Opponent() ActionMakerIdentifier {

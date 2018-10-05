@@ -15,6 +15,10 @@ const (
 	DealPrivateCards
 )
 
+const PreFlopBetSize float64 = 10.
+const PostFlopBetSize float64 = 10.
+const Ante float64 = 5.0
+
 type Action struct {
 	player ActionMaker
 	move   Move

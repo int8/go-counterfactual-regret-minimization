@@ -37,6 +37,7 @@ func TestGameCreation(t *testing.T) {
 	if len(moves) != 1 {
 		t.Errorf("Game root should have one action available, %v actions available", len(moves))
 	}
+
 }
 
 func TestGamePlay_1(t *testing.T) {
