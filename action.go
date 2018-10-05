@@ -3,8 +3,10 @@ package gocfr
 import "fmt"
 
 type Move int8
+
 const (
-	Check Move = iota
+	NoMove Move = iota
+	Check
 	Bet
 	Raise
 	Call
@@ -14,7 +16,7 @@ const (
 )
 
 type Action struct {
-	player Player
+	player ActionMaker
 	move   Move
 }
 

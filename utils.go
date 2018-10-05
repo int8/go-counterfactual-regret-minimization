@@ -18,11 +18,11 @@ func selectActionByMove(actions []Action, move Move) int {
 }
 
 func countPriorRaises(node RhodeIslandGameState) int {
-	if &node == nil || node.causingAction.move != Raise {
+	if &node == nil || node.causingMove != Raise {
 		return 0
-	} else {
-		return 1 + countPriorRaises(*node.parent)
 	}
+	return 1 + countPriorRaises(*node.parent)
+
 }
 
 func roundCheckFunc(expectedRound Round) func(node RhodeIslandGameState) bool {
@@ -30,18 +30,23 @@ func roundCheckFunc(expectedRound Round) func(node RhodeIslandGameState) bool {
 }
 
 func GameEndFunc() func(state RhodeIslandGameState) bool {
-	return func(state RhodeIslandGameState) bool { return state.IsTerminal()}
+	return func(state RhodeIslandGameState) bool { return state.IsTerminal() }
 }
 
 func NoRaiseAvailable() func(state RhodeIslandGameState) bool {
 	return func(state RhodeIslandGameState) bool {
-		actions:= state.GetAvailableActions()
-		return selectActionByMove(actions, Raise) == -1
+		moves := state.CurrentActor().GetAvailableMoves(&state)
+		for _, m := range moves {
+			if m == Raise {
+				return false
+			}
+		}
+		return true
 	}
 }
 
-func playerToMoveFunc(player Player) func(state RhodeIslandGameState) bool {
+func ActionMakerToMoveFunc(actionMakerId ActionMakerIdentifier) func(state RhodeIslandGameState) bool {
 	return func(state RhodeIslandGameState) bool {
-		return state.NextToMove() == player
+		return state.nextToMove == actionMakerId
 	}
 }

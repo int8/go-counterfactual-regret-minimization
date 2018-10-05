@@ -1,3 +1,4 @@
+
 package gocfr
 
 import (

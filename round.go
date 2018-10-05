@@ -22,8 +22,8 @@ func (round Round) NextRound() Round {
 	return End
 }
 
-func (r Round) String() string {
-	switch r {
+func (round Round) String() string {
+	switch round {
 	case Start:
 		return "Start"
 	case End:
@@ -37,4 +37,3 @@ func (r Round) String() string {
 	}
 	return "(?)"
 }
-
