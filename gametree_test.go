@@ -131,19 +131,37 @@ func TestGamePlay_CheckIfPlayerToMoveCorrect(t *testing.T) {
 	testGamePlay(root, movesTestsPairs, t)
 }
 
+func TestGamePlay_CheckIfStacksChange(t *testing.T) {
+	root := CreateRoot(100., 100.)
+	movesTestsPairs := []MoveTestsTriple{
+		{DealPrivateCards, StackEqualToFunc(PlayerA, 100.), StackEqualToFunc(PlayerA, 100.-Ante)},
+		{Check, StackEqualToFunc(PlayerA, 100.-Ante), StackEqualToFunc(PlayerA, 100.-Ante)},
+		{Check, StackEqualToFunc(PlayerB, 100.-Ante), StackEqualToFunc(PlayerB, 100.-Ante)},
+		{DealPublicCard, StackEqualToFunc(PlayerA, 100.-Ante), StackEqualToFunc(PlayerA, 100.-Ante)},
+		{Bet, StackEqualToFunc(PlayerA, 100.-Ante), StackEqualToFunc(PlayerA, 100.-Ante-PostFlopBetSize)},
+		{Call, StackEqualToFunc(PlayerB, 100.-Ante), StackEqualToFunc(PlayerB, 100.-Ante-PostFlopBetSize)},
+		{DealPublicCard, StackEqualToFunc(PlayerB, 100.-Ante-PostFlopBetSize), StackEqualToFunc(PlayerB, 100.-Ante-PostFlopBetSize)},
+		{Check, StackEqualToFunc(PlayerA, 100.-Ante-PostFlopBetSize), StackEqualToFunc(PlayerA, 100.-Ante-PostFlopBetSize)},
+		{Bet, StackEqualToFunc(PlayerB, 100.-Ante-PostFlopBetSize), StackEqualToFunc(PlayerB, 100.-Ante-2*PostFlopBetSize)},
+		{Call, StackEqualToFunc(PlayerA, 100.-Ante-PostFlopBetSize), StackEqualToFunc(PlayerA, 100.-Ante-2*PostFlopBetSize)},
+	}
+
+	testGamePlay(root, movesTestsPairs, t)
+}
+
 func testGamePlay(node RhodeIslandGameState, movesTests []MoveTestsTriple, t *testing.T) {
 	nodes := []RhodeIslandGameState{node}
 	for i, _ := range movesTests {
 
+		if !movesTests[i].preTest(nodes[i]) {
+			t.Errorf("pre action test function  #%v did not pass", i)
+		}
+
 		child := nodes[i].CurrentActor().Act(&nodes[i], movesTests[i].move)
 		nodes = append(nodes, child)
 
-		if !movesTests[i].preTest(nodes[i]) {
-			t.Errorf("pre test function  #%v did not pass", i)
-		}
-
 		if !movesTests[i].postTest(child) {
-			t.Errorf("post test function  #%v did not pass", i)
+			t.Errorf("post action test function  #%v did not pass", i)
 		}
 	}
 }

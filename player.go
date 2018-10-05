@@ -22,27 +22,27 @@ type Chance struct {
 func (chance *Chance) Act(state *RhodeIslandGameState, move Move) (child RhodeIslandGameState) {
 
 	if move == DealPublicCard {
-		child = chance.dealPublicCard(state, move)
+		child = chance.dealPublicCard(state)
 	}
 
 	if move == DealPrivateCards {
-		child = chance.dealPrivateCards(state, move)
+		child = chance.dealPrivateCards(state)
 	}
 	return child
 }
 
-func (chance *Chance) dealPublicCard(state *RhodeIslandGameState, move Move) RhodeIslandGameState {
-	child := state.CreateChild(state.round.NextRound(), move, state.table, PlayerA, false)
+func (chance *Chance) dealPublicCard(state *RhodeIslandGameState) RhodeIslandGameState {
+	child := state.CreateChild(state.round.NextRound(), DealPublicCard, state.table, PlayerA, false)
 	child.table.DropPublicCard(chance.deck.DealNextCard())
 	return child
 }
 
-func (chance *Chance) dealPrivateCards(state *RhodeIslandGameState, move Move) RhodeIslandGameState {
+func (chance *Chance) dealPrivateCards(state *RhodeIslandGameState) RhodeIslandGameState {
 	table := state.table
-	state.actors[PlayerA].(*PokerPlayer).stack -= Ante
-	state.actors[PlayerB].(*PokerPlayer).stack -= Ante
-	table.potSize += 2 * Ante
-	child := state.CreateChild(state.round.NextRound(), move, table, PlayerA, false)
+	state.actors[PlayerA].(*PokerPlayer).PlaceBet(&table, Ante)
+	state.actors[PlayerB].(*PokerPlayer).PlaceBet(&table, Ante)
+
+	child := state.CreateChild(state.round.NextRound(), DealPrivateCards, table, PlayerA, false)
 	child.actors[PlayerA].(*PokerPlayer).CollectPrivateCard(chance.deck.DealNextCard())
 	child.actors[PlayerB].(*PokerPlayer).CollectPrivateCard(chance.deck.DealNextCard())
 	return child
@@ -68,22 +68,10 @@ type PokerPlayer struct {
 func (player *PokerPlayer) Act(state *RhodeIslandGameState, move Move) RhodeIslandGameState {
 
 	table := state.table
-	var betSize float64
+	betSize := state.BetSize()
 
-	if state.round < Flop {
-		betSize = PreFlopBetSize
-	} else {
-		betSize = PostFlopBetSize
-	}
-
-	if move == Call || move == Bet {
-		player.stack -= betSize
-		table.potSize += betSize
-	}
-
-	if move == Raise {
-		player.stack -= 2 * betSize
-		table.potSize += 2 * betSize
+	if move == Call || move == Bet || move == Raise {
+		player.PlaceBet(&table, betSize)
 	}
 
 	if move == Fold || (state.round == Turn && (move == Call || (move == Check && state.causingMove == Check))) {
@@ -105,19 +93,31 @@ func (player *PokerPlayer) CollectPrivateCard(card Card) {
 	player.privateCards = append(player.privateCards, card)
 }
 
+func (player *PokerPlayer) PlaceBet(table *PokerTable, betSize float64) {
+	table.AddToPot(betSize)
+	player.stack -= betSize
+}
+
 func (player *PokerPlayer) GetAvailableMoves(state *RhodeIslandGameState) []Move {
 	return player.availableMoves
 }
 
 func (player *PokerPlayer) computeAvailableActions(state *RhodeIslandGameState) {
+
 	if player.availableMoves != nil {
 		return
 	}
 
 	if state.causingMove == Fold {
-		player.availableMoves = nil
+		player.availableMoves = []Move{}
 		return
 	}
+	betSize := state.BetSize()
+
+	opponentStack := state.actors[player.Opponent()].(*PokerPlayer).stack
+
+	allowedToBet := (player.stack >= betSize) && (opponentStack >= betSize)
+	allowedToRaise := (player.stack >= 2*betSize) && (opponentStack >= 2*betSize)
 
 	// whenever betting roung is over (CALL OR CHECK->CHECK)
 	bettingRoundEnded := state.causingMove == Call || (state.causingMove == Check && state.parent.causingMove == Check)
@@ -128,23 +128,27 @@ func (player *PokerPlayer) computeAvailableActions(state *RhodeIslandGameState) 
 
 	// single check implies BET or CHECK
 	if state.causingMove == Check && state.parent.causingMove != Check {
-		player.availableMoves = []Move{Bet, Check}
+		player.availableMoves = []Move{Check}
+		if allowedToBet {
+			player.availableMoves = append(player.availableMoves, Bet)
+		}
 		return
 	}
 
 	// if RAISE/BET, you can CALL FOLD or RAISE (unless there has been 6 prior raises - 3 for each player)
 	if state.causingMove == Bet || state.causingMove == Raise {
-		if countPriorRaises(*state) < 6 {
-			// allow raise if there has been less than 6 raises so far
-			player.availableMoves = []Move{Call, Fold, Raise}
-		} else {
-			player.availableMoves = []Move{Call, Fold}
+		player.availableMoves = []Move{Call, Fold}
+		if countPriorRaises(*state) < 6 && allowedToRaise {
+			player.availableMoves = append(player.availableMoves, Raise)
 		}
 		return
 	}
 
 	if state.causingMove == DealPrivateCards || state.causingMove == DealPublicCard {
-		player.availableMoves = []Move{Bet, Check}
+		player.availableMoves = []Move{Check}
+		if allowedToBet {
+			player.availableMoves = append(player.availableMoves, Bet)
+		}
 		return
 	}
 }

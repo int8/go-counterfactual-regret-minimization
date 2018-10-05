@@ -50,3 +50,9 @@ func ActionMakerToMoveFunc(actionMakerId ActionMakerIdentifier) func(state Rhode
 		return state.nextToMove == actionMakerId
 	}
 }
+
+func StackEqualToFunc(player ActionMakerIdentifier, stack float64) func(state RhodeIslandGameState) bool {
+	return func(state RhodeIslandGameState) bool {
+		return state.actors[player].(*PokerPlayer).stack == stack
+	}
+}

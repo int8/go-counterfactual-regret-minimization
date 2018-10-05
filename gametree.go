@@ -15,9 +15,16 @@ func (state *RhodeIslandGameState) CurrentActor() ActionMaker {
 	return state.actors[state.nextToMove]
 }
 
+func (state *RhodeIslandGameState) BetSize() float64 {
+	if state.round < Flop {
+		return PreFlopBetSize
+	}
+	return PostFlopBetSize
+}
+
 func CreateRoot(playerAStack float64, playerBStack float64) RhodeIslandGameState {
-	playerA := &PokerPlayer{id: PlayerA, availableMoves: nil, privateCards: []Card{}, stack: 100.0}
-	playerB := &PokerPlayer{id: PlayerB, availableMoves: nil, privateCards: []Card{}, stack: 100.0}
+	playerA := &PokerPlayer{id: PlayerA, availableMoves: nil, privateCards: []Card{}, stack: playerAStack}
+	playerB := &PokerPlayer{id: PlayerB, availableMoves: nil, privateCards: []Card{}, stack: playerBStack}
 	chance := &Chance{id: ChanceId, deck: CreateFullDeck()}
 
 	actors := map[ActionMakerIdentifier]ActionMaker{PlayerA: playerA, PlayerB: playerB, ChanceId: chance}
