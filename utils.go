@@ -1,41 +1,45 @@
 package gocfr
 
-func makeRange(min, max int) []int {
-	a := make([]int, max-min+1)
+func makeRange(min, max uint8) []uint8 {
+	a := make([]uint8, max-min+1)
 	for i := range a {
-		a[i] = min + i
+		a[i] = min + uint8(i)
 	}
 	return a
 }
 
-func selectActionByMove(actions []Action, move Move) int {
-	for i, a := range actions {
-		if a.move == move {
-			return i
+func cloneActorsMap(srcActors map[ActorId]Actor) map[ActorId]Actor {
+	actors := make(map[ActorId]Actor)
+	for id, actor := range srcActors {
+		switch actor.(type) {
+		case *Player:
+			actors[id] = actor.(*Player).Clone()
+		case *Chance:
+			actors[id] = actor.(*Chance).Clone()
 		}
 	}
-	return -1
+	return actors
 }
 
-func countPriorRaises(node RhodeIslandGameState) int {
-	if &node == nil || node.causingMove != Raise {
+func countPriorRaises(node *GameState) int {
+	if node == nil || node.causingMove != Raise {
 		return 0
 	}
-	return 1 + countPriorRaises(*node.parent)
+	return 1 + countPriorRaises(node.parent)
 
 }
 
-func roundCheckFunc(expectedRound Round) func(node RhodeIslandGameState) bool {
-	return func(node RhodeIslandGameState) bool { return node.round == expectedRound }
+func roundCheck(expectedRound Round) func(node *GameState) bool {
+	return func(node *GameState) bool { return node.round == expectedRound }
 }
 
-func GameEndFunc() func(state RhodeIslandGameState) bool {
-	return func(state RhodeIslandGameState) bool { return state.IsTerminal() }
+func gameEnd() func(state *GameState) bool {
+	return func(state *GameState) bool { return state.IsTerminal() }
 }
 
-func NoRaiseAvailable() func(state RhodeIslandGameState) bool {
-	return func(state RhodeIslandGameState) bool {
-		moves := state.CurrentActor().GetAvailableMoves(&state)
+func noRaiseAvailable() func(state *GameState) bool {
+	return func(state *GameState) bool {
+		moves := state.CurrentActor().GetAvailableMoves(state)
 		for _, m := range moves {
 			if m == Raise {
 				return false
@@ -45,14 +49,40 @@ func NoRaiseAvailable() func(state RhodeIslandGameState) bool {
 	}
 }
 
-func ActionMakerToMoveFunc(actionMakerId ActionMakerIdentifier) func(state RhodeIslandGameState) bool {
-	return func(state RhodeIslandGameState) bool {
-		return state.nextToMove == actionMakerId
+func actorToMove(actorId ActorId) func(state *GameState) bool {
+	return func(state *GameState) bool {
+		return state.nextToMove == actorId
 	}
 }
 
-func StackEqualToFunc(player ActionMakerIdentifier, stack float64) func(state RhodeIslandGameState) bool {
-	return func(state RhodeIslandGameState) bool {
-		return state.actors[player].(*PokerPlayer).stack == stack
+func stackEqualTo(player ActorId, stack float64) func(state *GameState) bool {
+	return func(state *GameState) bool {
+		return state.actors[player].(*Player).stack == stack
+	}
+}
+
+func noTest() func(state *GameState) bool {
+	return func(state *GameState) bool {
+		return true
+	}
+}
+
+func onlyCheckAvailable() func(state *GameState) bool {
+	return func(state *GameState) bool {
+		moves := state.CurrentActor().GetAvailableMoves(state)
+		if len(moves) == 1 && moves[0] == Check {
+			return true
+		}
+		return false
+	}
+}
+
+func checkAndBetAvailable() func(state *GameState) bool {
+	return func(state *GameState) bool {
+		moves := state.CurrentActor().GetAvailableMoves(state)
+		if len(moves) == 2 && moves[0] == Check && moves[1] == Bet {
+			return true
+		}
+		return false
 	}
 }

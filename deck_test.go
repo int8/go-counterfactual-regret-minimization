@@ -8,7 +8,7 @@ import (
 func TestFullDeckCardsCount(t *testing.T) {
 	fullDeck := CreateFullDeck()
 
-	if len(fullDeck.Cards) != 52 {
+	if len(fullDeck.cards) != 52 {
 		t.Error("Full deck should count 52 cards")
 	}
 
@@ -16,8 +16,8 @@ func TestFullDeckCardsCount(t *testing.T) {
 		t.Errorf("Full deck should have 52 cards left after initialization but have %v", fullDeck.CardsLeft())
 	}
 
-	for i := range fullDeck.Cards {
-		if fullDeck.CardsLeft() != 52-i {
+	for i := range fullDeck.cards {
+		if fullDeck.CardsLeft() != 52-uint8(i) {
 			t.Errorf("Full deck should have %v cards left dealing %v card but have %v", 52-i, i, fullDeck.CardsLeft())
 		}
 		fullDeck.DealNextCard()
@@ -27,22 +27,22 @@ func TestFullDeckCardsCount(t *testing.T) {
 
 func TestFullDeckCardsShuffling(t *testing.T) {
 	fullDeck := CreateFullDeck()
-	orderBeforeShuffling := make([]int, 52, 52)
+	orderBeforeShuffling := make([]uint8, 52, 52)
 	copy(orderBeforeShuffling, fullDeck.shuffleOrder)
 
-	for range fullDeck.Cards {
+	for range fullDeck.cards {
 		fullDeck.DealNextCard()
 	}
 
 	if reflect.DeepEqual(fullDeck.shuffleOrder, orderBeforeShuffling) {
-		t.Error("Unless you are devil unlucky, cards are not shuffled after dealing them all")
+		t.Error("Unless you are ultra unlucky, cards are not shuffled after dealing them all")
 	}
 }
 
 func TestIfAllCardsAreDealt(t *testing.T) {
 	fullDeck := CreateFullDeck()
 	cardsMap := map[Card]bool{}
-	for range fullDeck.Cards {
+	for range fullDeck.cards {
 		cardsMap[fullDeck.DealNextCard()] = true
 	}
 

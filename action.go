@@ -6,21 +6,21 @@ type Move int8
 
 const (
 	NoMove Move = iota
-	Check
-	Bet
-	Raise
-	Call
-	Fold
 	DealPublicCard
 	DealPrivateCards
+	Fold
+	Check
+	Bet
+	Call
+	Raise
 )
 
 const PreFlopBetSize float64 = 10.
-const PostFlopBetSize float64 = 10.
+const PostFlopBetSize float64 = 20.
 const Ante float64 = 5.0
 
 type Action struct {
-	player ActionMaker
+	player Actor
 	move   Move
 }
 

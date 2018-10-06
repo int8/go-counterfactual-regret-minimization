@@ -1,46 +1,47 @@
 package gocfr
 
 // RhodeIslandGameState
-type RhodeIslandGameState struct {
+type GameState struct {
 	round       Round
-	parent      *RhodeIslandGameState
+	parent      *GameState
 	causingMove Move
-	table       PokerTable
-	actors      map[ActionMakerIdentifier]ActionMaker
-	nextToMove  ActionMakerIdentifier
+	table       *Table
+	actors      map[ActorId]Actor
+	nextToMove  ActorId
+	dealer      ActorId
 	terminal    bool
 }
 
-func (state *RhodeIslandGameState) CurrentActor() ActionMaker {
+func (state *GameState) CurrentActor() Actor {
 	return state.actors[state.nextToMove]
 }
 
-func (state *RhodeIslandGameState) BetSize() float64 {
+func (state *GameState) BetSize() float64 {
 	if state.round < Flop {
 		return PreFlopBetSize
 	}
 	return PostFlopBetSize
 }
 
-func CreateRoot(playerAStack float64, playerBStack float64) RhodeIslandGameState {
-	playerA := &PokerPlayer{id: PlayerA, availableMoves: nil, privateCards: []Card{}, stack: playerAStack}
-	playerB := &PokerPlayer{id: PlayerB, availableMoves: nil, privateCards: []Card{}, stack: playerBStack}
+func CreateRoot(dealer ActorId, playerAStack float64, playerBStack float64) *GameState {
+	playerA := &Player{id: PlayerA, moves: nil, cards: []Card{}, stack: playerAStack}
+	playerB := &Player{id: PlayerB, moves: nil, cards: []Card{}, stack: playerBStack}
 	chance := &Chance{id: ChanceId, deck: CreateFullDeck()}
 
-	actors := map[ActionMakerIdentifier]ActionMaker{PlayerA: playerA, PlayerB: playerB, ChanceId: chance}
-	table := PokerTable{potSize: 0, publicCards: []Card{}}
+	actors := map[ActorId]Actor{PlayerA: playerA, PlayerB: playerB, ChanceId: chance}
+	table := &Table{pot: 0, cards: []Card{}}
 
-	return RhodeIslandGameState{round: Start, table: table,
-		actors: actors, nextToMove: ChanceId, causingMove: NoMove}
+	return &GameState{round: Start, table: table,
+		actors: actors, nextToMove: ChanceId, causingMove: NoMove, dealer: dealer}
 }
 
-func (node *RhodeIslandGameState) CreateChild(round Round, move Move, table PokerTable, nextToMove ActionMakerIdentifier, terminal bool) RhodeIslandGameState {
-	child := RhodeIslandGameState{round: round,
-		parent: node, causingMove: move, terminal: terminal,
-		table: table, actors: node.actors, nextToMove: nextToMove}
-	return child
+func (state *GameState) CreateChild(round Round, move Move, nextToMove ActorId, terminal bool) *GameState {
+	child := GameState{round: round,
+		parent: state, causingMove: move, terminal: terminal,
+		table: state.table.Clone(), actors: cloneActorsMap(state.actors), nextToMove: nextToMove, dealer: state.dealer}
+	return &child
 }
 
-func (state *RhodeIslandGameState) IsTerminal() bool {
+func (state *GameState) IsTerminal() bool {
 	return state.terminal
 }

@@ -1,16 +1,20 @@
 package gocfr
 
-
-type PokerTable struct {
-	potSize float64
-	publicCards []Card
+type Table struct {
+	pot   float64
+	cards []Card
 }
 
-func (table *PokerTable) AddToPot(amount float64) {
-	table.potSize += amount
+func (table *Table) AddToPot(amount float64) {
+	table.pot += amount
 }
 
-func (table *PokerTable) DropPublicCard(card Card) {
-	table.publicCards = append(table.publicCards, card)
+func (table *Table) DropPublicCard(card Card) {
+	table.cards = append(table.cards, card)
 }
 
+func (table *Table) Clone() *Table {
+	cards := make([]Card, len(table.cards))
+	copy(cards, table.cards)
+	return &Table{pot: table.pot, cards: cards}
+}
