@@ -44,7 +44,7 @@ type FullDeck struct {
 	currentCardIndex uint8
 }
 
-func CreateFullDeck() *FullDeck {
+func CreateFullDeck(shuffleInitially bool) *FullDeck {
 	names := [13]CardName{C2, C3, C4, C5, C6, C7, C8, C9, C10, Jack, Queen, King, Ace}
 	suits := [4]CardSuit{Hearts, Diamonds, Spades, Clubs}
 	fullDeck := *new(FullDeck)
@@ -55,7 +55,9 @@ func CreateFullDeck() *FullDeck {
 		}
 	}
 	fullDeck.shuffleOrder = makeRange(0, 51)
-	fullDeck.Shuffle()
+	if shuffleInitially {
+		fullDeck.Shuffle()
+	}
 	fullDeck.currentCardIndex = 0
 	return &fullDeck
 }
@@ -69,15 +71,14 @@ func (d *FullDeck) Shuffle() {
 }
 
 func (d *FullDeck) DealNextCard() Card {
-	// once card is dealt make sure deck is not empty /  shuffled
-	defer func() {
-		d.currentCardIndex = (d.currentCardIndex + 1) % 52
-		// if all cards dealt - shuffle
-		if d.currentCardIndex == 0 {
-			d.Shuffle()
-		}
-	}()
-	return d.cards[d.shuffleOrder[d.currentCardIndex]]
+
+	cardToBeReturned := d.cards[d.shuffleOrder[d.currentCardIndex]]
+	d.currentCardIndex = (d.currentCardIndex + 1) % 52
+	// if all cards dealt - shuffle
+	if d.currentCardIndex == 0 {
+		d.Shuffle()
+	}
+	return cardToBeReturned
 }
 
 func (d *FullDeck) CardsLeft() uint8 {

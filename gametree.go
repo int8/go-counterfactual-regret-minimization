@@ -1,6 +1,6 @@
 package gocfr
 
-// RhodeIslandGameState
+// GameState
 type GameState struct {
 	round       Round
 	parent      *GameState
@@ -26,7 +26,7 @@ func (state *GameState) BetSize() float64 {
 func CreateRoot(dealer ActorId, playerAStack float64, playerBStack float64) *GameState {
 	playerA := &Player{id: PlayerA, moves: nil, cards: []Card{}, stack: playerAStack}
 	playerB := &Player{id: PlayerB, moves: nil, cards: []Card{}, stack: playerBStack}
-	chance := &Chance{id: ChanceId, deck: CreateFullDeck()}
+	chance := &Chance{id: ChanceId, deck: CreateFullDeck(true)}
 
 	actors := map[ActorId]Actor{PlayerA: playerA, PlayerB: playerB, ChanceId: chance}
 	table := &Table{pot: 0, cards: []Card{}}
@@ -44,4 +44,16 @@ func (state *GameState) CreateChild(round Round, move Move, nextToMove ActorId, 
 
 func (state *GameState) IsTerminal() bool {
 	return state.terminal
+}
+
+func createRootWithPreparedDeck(dealer ActorId, playerAStack float64, playerBStack float64, deck *FullDeck) *GameState {
+	playerA := &Player{id: PlayerA, moves: nil, cards: []Card{}, stack: playerAStack}
+	playerB := &Player{id: PlayerB, moves: nil, cards: []Card{}, stack: playerBStack}
+	chance := &Chance{id: ChanceId, deck: deck}
+
+	actors := map[ActorId]Actor{PlayerA: playerA, PlayerB: playerB, ChanceId: chance}
+	table := &Table{pot: 0, cards: []Card{}}
+
+	return &GameState{round: Start, table: table,
+		actors: actors, nextToMove: ChanceId, causingMove: NoMove, dealer: dealer}
 }

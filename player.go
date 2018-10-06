@@ -1,5 +1,9 @@
 package gocfr
 
+import (
+	"errors"
+)
+
 type ActorId int8
 
 const (
@@ -38,7 +42,8 @@ func (chance *Chance) Act(state *GameState, move Move) (child *GameState) {
 func (chance *Chance) dealPublicCard(state *GameState) *GameState {
 
 	child := state.CreateChild(state.round.NextRound(), DealPublicCard, PlayerA, false)
-	child.table.DropPublicCard(chance.deck.DealNextCard())
+	// important to deal using child deck / not current chance deck
+	child.table.DropPublicCard(child.actors[ChanceId].(*Chance).deck.DealNextCard())
 	return child
 }
 
@@ -47,8 +52,9 @@ func (chance *Chance) dealPrivateCards(state *GameState) *GameState {
 	state.actors[PlayerA].(*Player).PlaceBet(state.table, Ante)
 	state.actors[PlayerB].(*Player).PlaceBet(state.table, Ante)
 	child := state.CreateChild(state.round.NextRound(), DealPrivateCards, PlayerA, false)
-	child.actors[PlayerA].(*Player).CollectPrivateCard(chance.deck.DealNextCard())
-	child.actors[PlayerB].(*Player).CollectPrivateCard(chance.deck.DealNextCard())
+	// important to deal using child deck / not current chance deck
+	child.actors[PlayerA].(*Player).CollectPrivateCard(child.actors[ChanceId].(*Chance).deck.DealNextCard())
+	child.actors[PlayerB].(*Player).CollectPrivateCard(child.actors[ChanceId].(*Chance).deck.DealNextCard())
 	return child
 }
 
@@ -59,7 +65,7 @@ func (chance *Chance) GetAvailableMoves(state *GameState) []Move {
 	if !state.terminal {
 		return []Move{DealPublicCard}
 	}
-	return nil
+	return []Move{}
 }
 
 type Player struct {
@@ -137,7 +143,7 @@ func (player *Player) computeAvailableActions(state *GameState) {
 	// whenever betting roung is over (CALL OR CHECK->CHECK)
 	bettingRoundEnded := state.causingMove == Call || (state.causingMove == Check && state.parent.causingMove == Check)
 	if bettingRoundEnded {
-		player.moves = nil
+		player.moves = []Move{}
 		return
 	}
 
@@ -166,14 +172,16 @@ func (player *Player) computeAvailableActions(state *GameState) {
 		}
 		return
 	}
+	panic(errors.New("This code should not be reachable."))
 }
 
 func (player Player) String() string {
 	if player.id == 1 {
 		return "A"
-	}
-	if player.id == -1 {
+	} else if player.id == -1 {
 		return "B"
+	} else {
+		return "Chance"
 	}
-	return "Chance"
+	panic(errors.New("This code should not be reachable."))
 }

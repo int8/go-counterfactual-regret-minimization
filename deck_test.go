@@ -6,7 +6,7 @@ import (
 )
 
 func TestFullDeckCardsCount(t *testing.T) {
-	fullDeck := CreateFullDeck()
+	fullDeck := CreateFullDeck(true)
 
 	if len(fullDeck.cards) != 52 {
 		t.Error("Full deck should count 52 cards")
@@ -26,7 +26,7 @@ func TestFullDeckCardsCount(t *testing.T) {
 }
 
 func TestFullDeckCardsShuffling(t *testing.T) {
-	fullDeck := CreateFullDeck()
+	fullDeck := CreateFullDeck(true)
 	orderBeforeShuffling := make([]uint8, 52, 52)
 	copy(orderBeforeShuffling, fullDeck.shuffleOrder)
 
@@ -40,7 +40,7 @@ func TestFullDeckCardsShuffling(t *testing.T) {
 }
 
 func TestIfAllCardsAreDealt(t *testing.T) {
-	fullDeck := CreateFullDeck()
+	fullDeck := CreateFullDeck(true)
 	cardsMap := map[Card]bool{}
 	for range fullDeck.cards {
 		cardsMap[fullDeck.DealNextCard()] = true
@@ -56,5 +56,32 @@ func TestIfAllCardsAreDealt(t *testing.T) {
 			}
 		}
 	}
+}
 
+func TestDeckPreparationForTestingPurposes(t *testing.T) {
+	aceHearts := Card{Ace, Hearts}
+	twoSpades := Card{C2, Spades}
+	jackHearts := Card{Jack, Hearts}
+	kingHearts := Card{King, Hearts}
+
+	deck := prepareDeckForTest(aceHearts, twoSpades, jackHearts, kingHearts)
+	dealtCard := deck.DealNextCard()
+	if dealtCard != aceHearts {
+		t.Errorf("%v should be dealt but %v was dealt instead", aceHearts, dealtCard)
+	}
+
+	dealtCard = deck.DealNextCard()
+	if dealtCard != twoSpades {
+		t.Errorf("%v should be dealt but %v was dealt instead", twoSpades, dealtCard)
+	}
+
+	dealtCard = deck.DealNextCard()
+	if dealtCard != jackHearts {
+		t.Errorf("%v should be dealt but %v was dealt instead", jackHearts, dealtCard)
+	}
+
+	dealtCard = deck.DealNextCard()
+	if dealtCard != kingHearts {
+		t.Errorf("%v should be dealt but %v was dealt instead", kingHearts, dealtCard)
+	}
 }

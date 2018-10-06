@@ -26,7 +26,25 @@ func countPriorRaises(node *GameState) int {
 		return 0
 	}
 	return 1 + countPriorRaises(node.parent)
+}
 
+func prepareDeckForTest(privateCardA, privateCardB, flopCard, turnCard Card) *FullDeck {
+	d := CreateFullDeck(false)
+	for i, _ := range d.cards {
+		if d.cards[i] == privateCardA {
+			d.cards[0], d.cards[i] = d.cards[i], d.cards[0]
+		}
+		if d.cards[i] == privateCardB {
+			d.cards[1], d.cards[i] = d.cards[i], d.cards[1]
+		}
+		if d.cards[i] == flopCard {
+			d.cards[2], d.cards[i] = d.cards[i], d.cards[2]
+		}
+		if d.cards[i] == turnCard {
+			d.cards[3], d.cards[i] = d.cards[i], d.cards[3]
+		}
+	}
+	return d
 }
 
 func roundCheck(expectedRound Round) func(node *GameState) bool {
@@ -76,7 +94,6 @@ func onlyCheckAvailable() func(state *GameState) bool {
 		return false
 	}
 }
-
 func checkAndBetAvailable() func(state *GameState) bool {
 	return func(state *GameState) bool {
 		moves := state.CurrentActor().GetAvailableMoves(state)
@@ -84,5 +101,23 @@ func checkAndBetAvailable() func(state *GameState) bool {
 			return true
 		}
 		return false
+	}
+}
+
+func privateCards(playerACard Card, playerBCard Card) func(state *GameState) bool {
+	return func(state *GameState) bool {
+		return state.actors[PlayerA].(*Player).cards[0] == playerACard && state.actors[PlayerB].(*Player).cards[0] == playerBCard
+	}
+}
+
+func flopCard(publicFlopCard Card) func(state *GameState) bool {
+	return func(state *GameState) bool {
+		return state.table.cards[0] == publicFlopCard
+	}
+}
+
+func turnCard(publicTurnCard Card) func(state *GameState) bool {
+	return func(state *GameState) bool {
+		return state.table.cards[1] == publicTurnCard
 	}
 }

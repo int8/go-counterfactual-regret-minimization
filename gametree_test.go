@@ -218,6 +218,31 @@ func TestGamePlay_CheckIfStacksChange(t *testing.T) {
 	testGamePlay(root, movesTestsPairs, t)
 }
 
+func TestIfRootCreationWithDeckPreparedWorks(t *testing.T) {
+	aceHearts := Card{Ace, Hearts}
+	c2Spades := Card{C2, Spades}
+	jackHearts := Card{Jack, Hearts}
+	kingHearts := Card{King, Hearts}
+
+	preparedDeck := prepareDeckForTest(aceHearts, c2Spades, jackHearts, kingHearts)
+	root := createRootWithPreparedDeck(PlayerA, 100., 100., preparedDeck)
+
+	movesTestsPairs := []MoveTestsTriple{
+		{DealPrivateCards, noTest(), privateCards(aceHearts, c2Spades)},
+		{Check, noTest(), noTest()},
+		{Check, noTest(), noTest()},
+		{DealPublicCard, noTest(), flopCard(jackHearts)},
+		{Check, noTest(), noTest()},
+		{Check, noTest(), noTest()},
+		{DealPublicCard, noTest(), turnCard(kingHearts)},
+		{Check, noTest(), noTest()},
+		{Check, noTest(), noTest()},
+	}
+
+	testGamePlay(root, movesTestsPairs, t)
+
+}
+
 func TestGamePlay_CheckIfChildPointersDifferFromParentsPointers(t *testing.T) {
 	root := CreateRoot(PlayerA, 100., 100.)
 	child := root.actors[root.nextToMove].(*Chance).Act(root, DealPrivateCards)
