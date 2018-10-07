@@ -43,7 +43,7 @@ func TestIfAllCardsAreDealt(t *testing.T) {
 	fullDeck := CreateFullDeck(true)
 	cardsMap := map[Card]bool{}
 	for range fullDeck.cards {
-		cardsMap[fullDeck.DealNextCard()] = true
+		cardsMap[*fullDeck.DealNextCard()] = true
 	}
 
 	names := [13]CardName{C2, C3, C4, C5, C6, C7, C8, C9, C10, Jack, Queen, King, Ace}
@@ -66,22 +66,22 @@ func TestDeckPreparationForTestingPurposes(t *testing.T) {
 
 	deck := prepareDeckForTest(aceHearts, twoSpades, jackHearts, kingHearts)
 	dealtCard := deck.DealNextCard()
-	if dealtCard != aceHearts {
+	if *dealtCard != aceHearts {
 		t.Errorf("%v should be dealt but %v was dealt instead", aceHearts, dealtCard)
 	}
 
 	dealtCard = deck.DealNextCard()
-	if dealtCard != twoSpades {
+	if *dealtCard != twoSpades {
 		t.Errorf("%v should be dealt but %v was dealt instead", twoSpades, dealtCard)
 	}
 
 	dealtCard = deck.DealNextCard()
-	if dealtCard != jackHearts {
+	if *dealtCard != jackHearts {
 		t.Errorf("%v should be dealt but %v was dealt instead", jackHearts, dealtCard)
 	}
 
 	dealtCard = deck.DealNextCard()
-	if dealtCard != kingHearts {
+	if *dealtCard != kingHearts {
 		t.Errorf("%v should be dealt but %v was dealt instead", kingHearts, dealtCard)
 	}
 }

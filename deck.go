@@ -70,7 +70,7 @@ func (d *FullDeck) Shuffle() {
 	})
 }
 
-func (d *FullDeck) DealNextCard() Card {
+func (d *FullDeck) DealNextCard() *Card {
 
 	cardToBeReturned := d.cards[d.shuffleOrder[d.currentCardIndex]]
 	d.currentCardIndex = (d.currentCardIndex + 1) % 52
@@ -78,7 +78,7 @@ func (d *FullDeck) DealNextCard() Card {
 	if d.currentCardIndex == 0 {
 		d.Shuffle()
 	}
-	return cardToBeReturned
+	return &cardToBeReturned
 }
 
 func (d *FullDeck) CardsLeft() uint8 {
@@ -86,11 +86,10 @@ func (d *FullDeck) CardsLeft() uint8 {
 }
 
 func (d *FullDeck) Clone() *FullDeck {
-	cards := make([]Card, len(d.cards))
-	copy(cards, d.cards)
 	shuffleOrder := make([]uint8, len(d.shuffleOrder))
 	copy(shuffleOrder, d.shuffleOrder)
-	return &FullDeck{cards, shuffleOrder, d.currentCardIndex}
+	// important to reuse d.cards here
+	return &FullDeck{d.cards, shuffleOrder, d.currentCardIndex}
 }
 
 func (c Card) String() string {

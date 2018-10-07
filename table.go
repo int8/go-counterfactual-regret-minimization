@@ -9,8 +9,8 @@ func (table *Table) AddToPot(amount float64) {
 	table.pot += amount
 }
 
-func (table *Table) DropPublicCard(card Card) {
-	table.cards = append(table.cards, card)
+func (table *Table) DropPublicCard(card *Card) {
+	table.cards = append(table.cards, *card)
 }
 
 func (table *Table) Clone() *Table {

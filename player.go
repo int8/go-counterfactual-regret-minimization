@@ -18,10 +18,6 @@ type Actor interface {
 	GetAvailableMoves(state *GameState) []Move
 }
 
-//TODO: now separate chance istance is creater for every game state this is very inefficient
-//TODO: Chance is rather heavy, it keeps the whole deck. Consider using the same instance
-//TODO: with methods like nextCardExceptOf(excludedCards []Card) etc, keeping dealt cards would then be enough
-
 type Chance struct {
 	id   ActorId
 	deck *FullDeck
@@ -49,10 +45,10 @@ func (chance *Chance) dealPublicCard(state *GameState) *GameState {
 
 func (chance *Chance) dealPrivateCards(state *GameState) *GameState {
 
-	state.actors[PlayerA].(*Player).PlaceBet(state.table, Ante)
-	state.actors[PlayerB].(*Player).PlaceBet(state.table, Ante)
 	child := state.CreateChild(state.round.NextRound(), DealPrivateCards, PlayerA, false)
 	// important to deal using child deck / not current chance deck
+	child.actors[PlayerA].(*Player).PlaceBet(child.table, Ante)
+	child.actors[PlayerB].(*Player).PlaceBet(child.table, Ante)
 	child.actors[PlayerA].(*Player).CollectPrivateCard(child.actors[ChanceId].(*Chance).deck.DealNextCard())
 	child.actors[PlayerB].(*Player).CollectPrivateCard(child.actors[ChanceId].(*Chance).deck.DealNextCard())
 	return child
@@ -70,7 +66,7 @@ func (chance *Chance) GetAvailableMoves(state *GameState) []Move {
 
 type Player struct {
 	id    ActorId
-	cards []Card
+	card  *Card
 	stack float64
 	moves []Move
 }
@@ -79,24 +75,43 @@ func (chance *Chance) Clone() *Chance {
 	return &Chance{id: chance.id, deck: chance.deck.Clone()}
 }
 
-func (player *Player) Act(state *GameState, move Move) *GameState {
+//TODO: it is getting messy, thing of structuring it better
+func (player *Player) Act(state *GameState, move Move) (child *GameState) {
 
-	table := state.table
 	betSize := state.BetSize()
 
-	if move == Call || move == Bet || move == Raise {
-		player.PlaceBet(table, betSize)
+	defer func() {
+		if move == Call || move == Bet {
+			child.actors[player.id].(*Player).PlaceBet(child.table, betSize)
+		}
+		if move == Raise {
+			child.actors[player.id].(*Player).PlaceBet(child.table, 2*betSize)
+		}
+	}()
+
+	if state.round == Turn && (move == Call || (move == Check && state.causingMove == Check)) {
+		child = state.CreateChild(state.round, move, NoActor, true)
+		return
 	}
 
-	if move == Fold || (state.round == Turn && (move == Call || (move == Check && state.causingMove == Check))) {
-		return state.CreateChild(state.round, move, NoActor, true)
+	if move == Fold {
+		child = state.CreateChild(state.round, move, NoActor, true)
+		if child.round < Flop {
+			child.actors[-state.nextToMove].(*Player).PlaceBet(child.table, -PreFlopBetSize)
+		} else {
+			child.actors[-state.nextToMove].(*Player).PlaceBet(child.table, -PostFlopBetSize)
+		}
+		return
 	}
 
 	if move == Call || (move == Check && state.causingMove == Check) {
-		return state.CreateChild(state.round, move, ChanceId, false)
+		child = state.CreateChild(state.round, move, ChanceId, false)
+		return
 	}
 
-	return state.CreateChild(state.round, move, player.Opponent(), false)
+	child = state.CreateChild(state.round, move, player.Opponent(), false)
+	return
+
 }
 
 func (player *Player) GetAvailableMoves(state *GameState) []Move {
@@ -105,17 +120,15 @@ func (player *Player) GetAvailableMoves(state *GameState) []Move {
 }
 
 func (player *Player) Clone() *Player {
-	cards := make([]Card, len(player.cards))
-	copy(cards, player.cards)
-	return &Player{cards: cards, id: player.id, stack: player.stack, moves: nil}
+	return &Player{card: player.card, id: player.id, stack: player.stack, moves: nil}
 }
 
 func (player *Player) Opponent() ActorId {
 	return -player.id
 }
 
-func (player *Player) CollectPrivateCard(card Card) {
-	player.cards = append(player.cards, card)
+func (player *Player) CollectPrivateCard(card *Card) {
+	player.card = card
 }
 
 func (player *Player) PlaceBet(table *Table, betSize float64) {
@@ -172,10 +185,35 @@ func (player *Player) computeAvailableActions(state *GameState) {
 		}
 		return
 	}
-	panic(errors.New("This code should not be reachable."))
+	panic(errors.New("Code not reachable."))
 }
 
-func (player Player) String() string {
+func (player *Player) EvaluateHand(table *Table) []int8 {
+
+	var flush, three, pair, straight, ownCard int8
+
+	if (*player).card.suit == table.cards[0].suit && (*player).card.suit == table.cards[1].suit {
+		flush = 1
+	}
+
+	if ((*player).card.name == table.cards[0].name) && ((*player).card.name == table.cards[1].name) {
+		three = 1
+	}
+
+	if (((*player).card.name == table.cards[0].name) || ((*player).card.name == table.cards[1].name)) || table.cards[0].name == table.cards[1].name {
+		pair = 1
+	}
+
+	if pair == 0 && cardsDiffersByTwo([]Card{*player.card, table.cards[0], table.cards[1]}) {
+		straight = 1
+	}
+
+	ownCard = int8((*player).card.name)
+
+	return []int8{straight * flush, three, straight, flush, pair, ownCard}
+}
+
+func (player *Player) String() string {
 	if player.id == 1 {
 		return "A"
 	} else if player.id == -1 {
@@ -183,5 +221,5 @@ func (player Player) String() string {
 	} else {
 		return "Chance"
 	}
-	panic(errors.New("This code should not be reachable."))
+	panic(errors.New("Code not reachable."))
 }
