@@ -87,20 +87,17 @@ func (player *Player) Act(state *GameState, move Move) (child *GameState) {
 		if move == Raise {
 			child.actors[player.id].(*Player).PlaceBet(child.table, 2*betSize)
 		}
+		if move == Fold {
+			if child.round < Flop {
+				child.actors[-state.nextToMove].(*Player).PlaceBet(child.table, -PreFlopBetSize)
+			} else {
+				child.actors[-state.nextToMove].(*Player).PlaceBet(child.table, -PostFlopBetSize)
+			}
+		}
 	}()
 
-	if state.round == Turn && (move == Call || (move == Check && state.causingMove == Check)) {
+	if move == Fold || (state.round == Turn && (move == Call || (move == Check && state.causingMove == Check))) {
 		child = state.CreateChild(state.round, move, NoActor, true)
-		return
-	}
-
-	if move == Fold {
-		child = state.CreateChild(state.round, move, NoActor, true)
-		if child.round < Flop {
-			child.actors[-state.nextToMove].(*Player).PlaceBet(child.table, -PreFlopBetSize)
-		} else {
-			child.actors[-state.nextToMove].(*Player).PlaceBet(child.table, -PostFlopBetSize)
-		}
 		return
 	}
 
