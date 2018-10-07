@@ -13,6 +13,8 @@ const (
 	Raise
 )
 
+const MaxRaises int = 3
+
 const PreFlopBetSize float64 = 10.
 const PostFlopBetSize float64 = 20.
 const Ante float64 = 5.0

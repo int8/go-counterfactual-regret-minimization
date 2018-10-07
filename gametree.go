@@ -17,7 +17,7 @@ func (state *GameState) CurrentActor() Actor {
 	return state.actors[state.nextToMove]
 }
 
-func (state *GameState) BetSize() float64 {
+func (state *GameState) betSize() float64 {
 	if state.round < Flop {
 		return PreFlopBetSize
 	}

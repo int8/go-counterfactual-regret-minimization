@@ -75,10 +75,10 @@ func (chance *Chance) Clone() *Chance {
 	return &Chance{id: chance.id, deck: chance.deck.Clone()}
 }
 
-//TODO: it is getting messy, thing of structuring it better
+//TODO: it is getting messy, think of structuring it better
 func (player *Player) Act(state *GameState, move Move) (child *GameState) {
 
-	betSize := state.BetSize()
+	betSize := state.betSize()
 
 	defer func() {
 		if move == Call || move == Bet {
@@ -146,7 +146,7 @@ func (player *Player) computeAvailableActions(state *GameState) {
 		player.moves = []Move{}
 		return
 	}
-	betSize := state.BetSize()
+	betSize := state.betSize()
 
 	opponentStack := state.actors[player.Opponent()].(*Player).stack
 
@@ -172,7 +172,7 @@ func (player *Player) computeAvailableActions(state *GameState) {
 	// if RAISE/BET, you can CALL FOLD or RAISE (unless there has been 6 prior raises - 3 for each player)
 	if state.causingMove == Bet || state.causingMove == Raise {
 		player.moves = []Move{Call, Fold}
-		if countPriorRaises(state) < 6 && allowedToRaise {
+		if countPriorRaises(state) < MaxRaises && allowedToRaise {
 			player.moves = append(player.moves, Raise)
 		}
 		return
@@ -185,6 +185,7 @@ func (player *Player) computeAvailableActions(state *GameState) {
 		}
 		return
 	}
+	//TODO: not idiomatic !
 	panic(errors.New("Code not reachable."))
 }
 
@@ -221,5 +222,6 @@ func (player *Player) String() string {
 	} else {
 		return "Chance"
 	}
+	//TODO: not idiomatic !
 	panic(errors.New("Code not reachable."))
 }

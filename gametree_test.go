@@ -128,7 +128,7 @@ func TestGamePlay_1(t *testing.T) {
 	testGamePlayAfterEveryMove(root, movesTestsPairs, t)
 }
 
-func TestGamePlay_Max6Raises(t *testing.T) {
+func TestGamePlay_MaxRaises(t *testing.T) {
 	root := createRootForTest(100., 100.)
 
 	movesTestsPairs := []MoveTestsTriple{
@@ -136,10 +136,7 @@ func TestGamePlay_Max6Raises(t *testing.T) {
 		{Bet, roundCheck(PreFlop), roundCheck(PreFlop)},
 		{Raise, roundCheck(PreFlop), roundCheck(PreFlop)},
 		{Raise, roundCheck(PreFlop), roundCheck(PreFlop)},
-		{Raise, roundCheck(PreFlop), roundCheck(PreFlop)},
-		{Raise, roundCheck(PreFlop), roundCheck(PreFlop)},
-		{Raise, roundCheck(PreFlop), roundCheck(PreFlop)},
-		{Raise, roundCheck(PreFlop), roundCheck(PreFlop)},
+		{Raise, roundCheck(PreFlop), noRaiseAvailable()},
 		{Fold, roundCheck(PreFlop), gameEnd()},
 	}
 
