@@ -21,11 +21,12 @@ func cloneActorsMap(srcActors map[ActorId]Actor) map[ActorId]Actor {
 	return actors
 }
 
-func countPriorRaises(node *GameState) int {
-	if node == nil || node.causingMove != Raise {
+// TODO: This has been changed but is not properly tested
+func countPriorRaisesPerRound(node *RIGameState, round Round) int {
+	if node == nil || node.causingAction != Raise || node.round != round {
 		return 0
 	}
-	return 1 + countPriorRaises(node.parent)
+	return 1 + countPriorRaisesPerRound(node.parent, round)
 }
 
 func cardsDiffersByTwo(cards []Card) bool {

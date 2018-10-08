@@ -1,9 +1,9 @@
 package gocfr
 
-type Move int8
+type Action byte
 
 const (
-	NoMove Move = iota
+	NoAction Action = iota
 	DealPublicCard
 	DealPrivateCards
 	Fold
@@ -19,7 +19,7 @@ const PreFlopBetSize float64 = 10.
 const PostFlopBetSize float64 = 20.
 const Ante float64 = 5.0
 
-func (m Move) String() string {
+func (m Action) String() string {
 	switch m {
 	case Check:
 		return "Check"

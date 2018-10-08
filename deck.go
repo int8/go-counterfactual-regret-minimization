@@ -6,16 +6,19 @@ import (
 	"strconv"
 )
 
-type CardName uint8
+type CardName byte
 
+const NoCardSuit CardSuit = 0
 const (
-	Hearts   CardSuit = iota // ♥
-	Diamonds                 // ♦
-	Spades                   // ♠
-	Clubs                    // ♣
+	Hearts   CardSuit = 1 + iota // ♥
+	Diamonds                     // ♦
+	Spades                       // ♠
+	Clubs                        // ♣
 )
 
-type CardSuit uint8
+type CardSuit byte
+
+const NoCardName CardName = 0
 
 const (
 	C2 CardName = 2 + iota
