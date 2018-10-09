@@ -59,29 +59,25 @@ func TestIfAllCardsAreDealt(t *testing.T) {
 }
 
 func TestDeckPreparationForTestingPurposes(t *testing.T) {
-	aceHearts := Card{Ace, Hearts}
-	twoSpades := Card{C2, Spades}
-	jackHearts := Card{Jack, Hearts}
-	kingHearts := Card{King, Hearts}
 
-	deck := prepareDeckForTest(aceHearts, twoSpades, jackHearts, kingHearts)
+	deck := prepareDeckForTest(AceHearts, C2Spades, JackHearts, KingHearts)
 	dealtCard := deck.DealNextCard()
-	if *dealtCard != aceHearts {
-		t.Errorf("%v should be dealt but %v was dealt instead", aceHearts, dealtCard)
+	if *dealtCard != AceHearts {
+		t.Errorf("%v should be dealt but %v was dealt instead", AceHearts, dealtCard)
 	}
 
 	dealtCard = deck.DealNextCard()
-	if *dealtCard != twoSpades {
-		t.Errorf("%v should be dealt but %v was dealt instead", twoSpades, dealtCard)
+	if *dealtCard != C2Spades {
+		t.Errorf("%v should be dealt but %v was dealt instead", C2Spades, dealtCard)
 	}
 
 	dealtCard = deck.DealNextCard()
-	if *dealtCard != jackHearts {
-		t.Errorf("%v should be dealt but %v was dealt instead", jackHearts, dealtCard)
+	if *dealtCard != JackHearts {
+		t.Errorf("%v should be dealt but %v was dealt instead", JackHearts, dealtCard)
 	}
 
 	dealtCard = deck.DealNextCard()
-	if *dealtCard != kingHearts {
-		t.Errorf("%v should be dealt but %v was dealt instead", kingHearts, dealtCard)
+	if *dealtCard != KingHearts {
+		t.Errorf("%v should be dealt but %v was dealt instead", KingHearts, dealtCard)
 	}
 }

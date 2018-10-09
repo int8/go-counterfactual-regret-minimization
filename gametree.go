@@ -4,8 +4,6 @@ import (
 	"errors"
 )
 
-const RIMaxActionsPerGame int = 3 * (MaxRaises + 3) // CHECK + BET + MaxRaises + CALL + Chance
-
 // RIGameState
 type RIGameState struct {
 	round         Round
@@ -39,7 +37,7 @@ func (state *RIGameState) CurrentActor() Actor {
 
 func (state *RIGameState) Evaluate() float64 {
 	if state.IsTerminal() {
-		if state.causingAction == Fold {
+		if state.causingAction.Name() == Fold {
 			return float64(-state.parent.nextToMove) * state.table.pot
 		}
 		playerAHandValueVector := state.actors[PlayerA].(*Player).EvaluateHand(state.table)
@@ -81,8 +79,8 @@ func (state *RIGameState) CurrentInformationSet() InformationSet {
 	informationSet := [InformationSetSize]byte{privateCardName, privateCardSuit, flopCardName, flopCardSuit, turnCardName, turnCardSuit}
 	// there is no more than 50 actions overall
 	currentState := state
-	for i := 6; i < 6+RIMaxActionsPerGame; i++ {
-		informationSet[i] = byte(currentState.causingAction)
+	for i := 6; currentState.round != Start; i++ {
+		informationSet[i] = byte(currentState.causingAction.Name())
 		currentState = currentState.parent
 		if currentState == nil {
 			break
@@ -105,7 +103,7 @@ func CreateRoot(playerA *Player, playerB *Player) *RIGameState {
 	table := &Table{pot: 0, cards: []Card{}}
 
 	return &RIGameState{round: Start, table: table,
-		actors: actors, nextToMove: ChanceId, causingAction: NoAction}
+		actors: actors, nextToMove: ChanceId, causingAction: nil}
 }
 
 func (state *RIGameState) CreateChild(round Round, Action Action, nextToMove ActorId, terminal bool) *RIGameState {

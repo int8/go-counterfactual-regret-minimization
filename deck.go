@@ -8,33 +8,7 @@ import (
 
 type CardName byte
 
-const NoCardSuit CardSuit = 0
-const (
-	Hearts   CardSuit = 1 + iota // ♥
-	Diamonds                     // ♦
-	Spades                       // ♠
-	Clubs                        // ♣
-)
-
 type CardSuit byte
-
-const NoCardName CardName = 0
-
-const (
-	C2 CardName = 2 + iota
-	C3
-	C4
-	C5
-	C6
-	C7
-	C8
-	C9
-	C10
-	Jack
-	Queen
-	King
-	Ace
-)
 
 type Card struct {
 	name CardName
@@ -48,15 +22,9 @@ type FullDeck struct {
 }
 
 func CreateFullDeck(shuffleInitially bool) *FullDeck {
-	names := [13]CardName{C2, C3, C4, C5, C6, C7, C8, C9, C10, Jack, Queen, King, Ace}
-	suits := [4]CardSuit{Hearts, Diamonds, Spades, Clubs}
-	fullDeck := *new(FullDeck)
 
-	for _, suit := range suits {
-		for _, name := range names {
-			fullDeck.cards = append(fullDeck.cards, Card{name, suit})
-		}
-	}
+	fullDeck := *new(FullDeck)
+	fullDeck.cards = allCards
 	fullDeck.shuffleOrder = makeRange(0, 51)
 	if shuffleInitially {
 		fullDeck.Shuffle()
@@ -86,6 +54,10 @@ func (d *FullDeck) DealNextCard() *Card {
 
 func (d *FullDeck) CardsLeft() uint8 {
 	return 52 - d.currentCardIndex
+}
+
+func (d *FullDeck) RemainingCards() []Card {
+	return d.cards[d.currentCardIndex:52]
 }
 
 func (d *FullDeck) Clone() *FullDeck {

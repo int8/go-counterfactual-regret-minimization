@@ -22,7 +22,7 @@ func cloneActorsMap(srcActors map[ActorId]Actor) map[ActorId]Actor {
 }
 
 func countPriorRaisesPerRound(node *RIGameState, round Round) int {
-	if node == nil || node.causingAction != Raise || node.round != round {
+	if node == nil || node.causingAction.Name() != Raise || node.round != round {
 		return 0
 	}
 	return 1 + countPriorRaisesPerRound(node.parent, round)
