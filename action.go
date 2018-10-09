@@ -1,6 +1,6 @@
 package gocfr
 
-type Action byte
+type ActionName byte
 
 const (
 	NoAction Action = iota
