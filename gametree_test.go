@@ -79,7 +79,7 @@ func TestIfStackLimitsAvailableActions(t *testing.T) {
 
 	testGamePlayAfterEveryAction(root15, actionsTestsPairs, t)
 
-	root1000_15 := createRootForTest(1000., 15.)
+	root1000Vs15 := createRootForTest(1000., 15.)
 	actionsTestsPairs = []ActionTestsTriple{
 		{DealPrivateCards, noTest(), noTest()},
 		{Check, checkAndBetAvailable(), noTest()},
@@ -92,9 +92,9 @@ func TestIfStackLimitsAvailableActions(t *testing.T) {
 		{Check, onlyCheckAvailable(), noTest()}, // only check available
 	}
 
-	testGamePlayAfterEveryAction(root1000_15, actionsTestsPairs, t)
+	testGamePlayAfterEveryAction(root1000Vs15, actionsTestsPairs, t)
 
-	root1000_35 := createRootForTest(1000., 35.)
+	root1000Vs35 := createRootForTest(1000., 35.)
 	actionsTestsPairs = []ActionTestsTriple{
 		{DealPrivateCards, noTest(), noTest()},
 		{Check, checkAndBetAvailable(), noTest()},
@@ -107,7 +107,7 @@ func TestIfStackLimitsAvailableActions(t *testing.T) {
 		{Check, checkAndBetAvailable(), noTest()},
 	}
 
-	testGamePlayAfterEveryAction(root1000_35, actionsTestsPairs, t)
+	testGamePlayAfterEveryAction(root1000Vs35, actionsTestsPairs, t)
 }
 
 func TestGamePlay_1(t *testing.T) {
@@ -129,7 +129,7 @@ func TestGamePlay_1(t *testing.T) {
 }
 
 func TestGamePlay_MaxRaises(t *testing.T) {
-	root := createRootForTest(100., 100.)
+	root := createRootForTest(1000., 1000.)
 
 	actionsTestsPairs := []ActionTestsTriple{
 		{DealPrivateCards, roundCheck(Start), roundCheck(PreFlop)},
@@ -147,29 +147,13 @@ func TestGamePlay_MaxRaises(t *testing.T) {
 		{Bet, roundCheck(PreFlop), roundCheck(PreFlop)},
 		{Raise, roundCheck(PreFlop), roundCheck(PreFlop)},
 		{Raise, roundCheck(PreFlop), roundCheck(PreFlop)},
-		{Raise, roundCheck(PreFlop), roundCheck(PreFlop)},
-		{Raise, roundCheck(PreFlop), roundCheck(PreFlop)},
-		{Raise, roundCheck(PreFlop), roundCheck(PreFlop)},
-		{Raise, roundCheck(PreFlop), noRaiseAvailable()},
-		{Fold, roundCheck(PreFlop), gameEnd()},
-	}
-
-	testGamePlayAfterEveryAction(root, actionsTestsPairs, t)
-
-	actionsTestsPairs = []ActionTestsTriple{
-		{DealPrivateCards, roundCheck(Start), roundCheck(PreFlop)},
-		{Bet, roundCheck(PreFlop), roundCheck(PreFlop)},
-		{Raise, roundCheck(PreFlop), roundCheck(PreFlop)},
-		{Raise, roundCheck(PreFlop), roundCheck(PreFlop)},
-		{Raise, roundCheck(PreFlop), roundCheck(PreFlop)},
-		{Raise, roundCheck(PreFlop), roundCheck(PreFlop)},
-		{Raise, roundCheck(PreFlop), roundCheck(PreFlop)},
 		{Raise, roundCheck(PreFlop), noRaiseAvailable()},
 		{Call, roundCheck(PreFlop), roundCheck(PreFlop)},
 		{DealPublicCard, roundCheck(PreFlop), roundCheck(Flop)},
 		{Bet, roundCheck(Flop), roundCheck(Flop)},
 		{Raise, roundCheck(Flop), roundCheck(Flop)},
 		{Raise, roundCheck(Flop), roundCheck(Flop)},
+		{Raise, roundCheck(Flop), noRaiseAvailable()},
 		{Call, roundCheck(Flop), roundCheck(Flop)},
 		{DealPublicCard, roundCheck(Flop), roundCheck(Turn)},
 		{Check, roundCheck(Turn), roundCheck(Turn)},
@@ -543,43 +527,164 @@ func TestGamePlayEvaluationBFoldsPreFlopManyRaises(t *testing.T) {
 	testGamePlayAfterAllActions(root, actions, gameResult(2*singlePlayerPotContribution), t)
 }
 
+func TestGamePlayInformationSetForAAfterRaises(t *testing.T) {
+	aCard := Card{C10, Hearts}
+	bCard := Card{King, Clubs}
+	flopCard := Card{King, Diamonds}
+	turnCard := Card{King, Spades}
+
+	preparedDeck := prepareDeckForTest(aCard, bCard, flopCard, turnCard)
+	root := createRootWithPreparedDeck(100., 100., preparedDeck)
+
+	actions := []Action{DealPrivateCards, Check, Bet, Raise, Raise}
+	targetInformationSet := [InformationSetSize]byte{byte(aCard.name), byte(aCard.suit)}
+	targetInformationSet[6] = byte(Raise)
+	targetInformationSet[7] = byte(Raise)
+	targetInformationSet[8] = byte(Bet)
+	targetInformationSet[9] = byte(Check)
+	targetInformationSet[10] = byte(DealPrivateCards)
+
+	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
+}
+
+func TestGamePlayInformationSetForB_ChecksOnly(t *testing.T) {
+	aCard := Card{C10, Hearts}
+	bCard := Card{King, Clubs}
+	flopCard := Card{King, Diamonds}
+	turnCard := Card{King, Spades}
+
+	preparedDeck := prepareDeckForTest(aCard, bCard, flopCard, turnCard)
+	root := createRootWithPreparedDeck(100., 100., preparedDeck)
+
+	actions := []Action{DealPrivateCards, Check, Check, DealPublicCard, Check, Check, DealPublicCard, Check}
+	targetInformationSet := [InformationSetSize]byte{byte(bCard.name), byte(bCard.suit), byte(flopCard.name),
+		byte(flopCard.suit), byte(turnCard.name), byte(turnCard.suit)}
+	targetInformationSet[6] = byte(Check)
+	targetInformationSet[7] = byte(DealPublicCard)
+	targetInformationSet[8] = byte(Check)
+	targetInformationSet[9] = byte(Check)
+	targetInformationSet[10] = byte(DealPublicCard)
+	targetInformationSet[11] = byte(Check)
+	targetInformationSet[12] = byte(Check)
+	targetInformationSet[13] = byte(DealPrivateCards)
+
+	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
+}
+
+func TestGamePlayInformationSetForA_NoActions(t *testing.T) {
+	aCard := Card{C10, Hearts}
+	bCard := Card{King, Clubs}
+	flopCard := Card{King, Diamonds}
+	turnCard := Card{King, Spades}
+
+	preparedDeck := prepareDeckForTest(aCard, bCard, flopCard, turnCard)
+	root := createRootWithPreparedDeck(100., 100., preparedDeck)
+
+	actions := []Action{DealPrivateCards}
+	targetInformationSet := [InformationSetSize]byte{byte(aCard.name), byte(aCard.suit)}
+	targetInformationSet[6] = byte(DealPrivateCards)
+
+	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
+}
+
+func TestGamePlayInformationSetForB_SingleCheck(t *testing.T) {
+	aCard := Card{C10, Hearts}
+	bCard := Card{Ace, Spades}
+	flopCard := Card{King, Diamonds}
+	turnCard := Card{King, Spades}
+
+	preparedDeck := prepareDeckForTest(aCard, bCard, flopCard, turnCard)
+	root := createRootWithPreparedDeck(100., 100., preparedDeck)
+
+	actions := []Action{DealPrivateCards, Check}
+	targetInformationSet := [InformationSetSize]byte{byte(bCard.name), byte(bCard.suit)}
+	targetInformationSet[6] = byte(Check)
+	targetInformationSet[7] = byte(DealPrivateCards)
+
+	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
+}
+
+func TestGamePlayInformationSetForB_BetCallAndChecksOnly(t *testing.T) {
+	aCard := Card{C10, Hearts}
+	bCard := Card{King, Clubs}
+	flopCard := Card{King, Diamonds}
+	turnCard := Card{King, Spades}
+
+	preparedDeck := prepareDeckForTest(aCard, bCard, flopCard, turnCard)
+	root := createRootWithPreparedDeck(100., 100., preparedDeck)
+
+	actions := []Action{DealPrivateCards, Check, Bet, Call, DealPublicCard, Check, Check, DealPublicCard, Check}
+	targetInformationSet := [InformationSetSize]byte{byte(bCard.name), byte(bCard.suit), byte(flopCard.name),
+		byte(flopCard.suit), byte(turnCard.name), byte(turnCard.suit)}
+	targetInformationSet[6] = byte(Check)
+	targetInformationSet[7] = byte(DealPublicCard)
+	targetInformationSet[8] = byte(Check)
+	targetInformationSet[9] = byte(Check)
+	targetInformationSet[10] = byte(DealPublicCard)
+	targetInformationSet[11] = byte(Call)
+	targetInformationSet[12] = byte(Bet)
+	targetInformationSet[13] = byte(Check)
+	targetInformationSet[14] = byte(DealPrivateCards)
+
+	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
+}
+
+func TestGamePlayInformationSetForBAfterCheckBetRaise(t *testing.T) {
+	aCard := Card{C10, Hearts}
+	bCard := Card{Queen, Clubs}
+	flopCard := Card{King, Diamonds}
+	turnCard := Card{King, Spades}
+
+	preparedDeck := prepareDeckForTest(aCard, bCard, flopCard, turnCard)
+	root := createRootWithPreparedDeck(100., 100., preparedDeck)
+
+	actions := []Action{DealPrivateCards, Check, Bet, Raise}
+	targetInformationSet := [InformationSetSize]byte{byte(bCard.name), byte(bCard.suit)}
+	targetInformationSet[6] = byte(Raise)
+	targetInformationSet[7] = byte(Bet)
+	targetInformationSet[8] = byte(Check)
+	targetInformationSet[9] = byte(DealPrivateCards)
+
+	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
+}
+
 func testGamePlayAfterEveryAction(node *RIGameState, actionsTests []ActionTestsTriple, t *testing.T) {
-	nodes := []*RIGameState{node}
+	nodes := []GameStateHolder{node}
 	for i := range actionsTests {
 
-		if !actionsTests[i].preTest(nodes[i]) {
+		if !actionsTests[i].preTest(nodes[i].(*RIGameState)) {
 			t.Errorf("pre action test function  #%v did not pass", i)
 		}
 
-		child := nodes[i].CurrentActor().Act(nodes[i], actionsTests[i].Action)
+		child := nodes[i].Child(actionsTests[i].Action)
 		nodes = append(nodes, child)
 
-		if !actionsTests[i].postTest(child) {
+		if !actionsTests[i].postTest(child.(*RIGameState)) {
 			t.Errorf("post action test function  #%v did not pass", i)
 		}
 	}
 }
 
 func testGamePlayAfterAllActions(node *RIGameState, actions []Action, test func(state *RIGameState) bool, t *testing.T) {
-	nodes := []*RIGameState{node}
+	nodes := []GameStateHolder{node}
 	for i := range actions {
-		child := nodes[i].CurrentActor().Act(nodes[i], actions[i])
+		child := nodes[i].Child(actions[i])
 		nodes = append(nodes, child)
 	}
-	if !test(nodes[len(nodes)-1]) {
+	if !test(nodes[len(nodes)-1].(*RIGameState)) {
 		t.Error("post game test function did not pass")
 	}
 }
 
 func createRootForTest(playerAStack float64, playerBStack float64) *RIGameState {
-	playerA := &Player{id: PlayerA, Actions: nil, card: nil, stack: playerAStack}
-	playerB := &Player{id: PlayerB, Actions: nil, card: nil, stack: playerBStack}
+	playerA := &Player{id: PlayerA, actions: nil, card: nil, stack: playerAStack}
+	playerB := &Player{id: PlayerB, actions: nil, card: nil, stack: playerBStack}
 	return CreateRoot(playerA, playerB)
 }
 
 func createRootWithPreparedDeck(playerAStack float64, playerBStack float64, deck *FullDeck) *RIGameState {
-	playerA := &Player{id: PlayerA, Actions: nil, card: nil, stack: playerAStack}
-	playerB := &Player{id: PlayerB, Actions: nil, card: nil, stack: playerBStack}
+	playerA := &Player{id: PlayerA, actions: nil, card: nil, stack: playerAStack}
+	playerB := &Player{id: PlayerB, actions: nil, card: nil, stack: playerBStack}
 	chance := &Chance{id: ChanceId, deck: deck}
 
 	actors := map[ActorId]Actor{PlayerA: playerA, PlayerB: playerB, ChanceId: chance}
@@ -693,5 +798,12 @@ func flopCard(publicFlopCard Card) func(state *RIGameState) bool {
 func turnCard(publicTurnCard Card) func(state *RIGameState) bool {
 	return func(state *RIGameState) bool {
 		return state.table.cards[1] == publicTurnCard
+	}
+}
+
+func lastInformationSet(informationSet [InformationSetSize]byte) func(state *RIGameState) bool {
+	return func(state *RIGameState) bool {
+		currentInformationSet := state.CurrentInformationSet()
+		return currentInformationSet == informationSet
 	}
 }

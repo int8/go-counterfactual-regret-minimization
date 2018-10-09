@@ -78,7 +78,7 @@ func (state *RIGameState) CurrentInformationSet() InformationSet {
 		turnCardName = byte(state.table.cards[1].name)
 		turnCardSuit = byte(state.table.cards[1].suit)
 	}
-	informationSet := [InformationSetSize]byte{privateCardSuit, privateCardName, flopCardName, flopCardSuit, turnCardName, turnCardSuit}
+	informationSet := [InformationSetSize]byte{privateCardName, privateCardSuit, flopCardName, flopCardSuit, turnCardName, turnCardSuit}
 	// there is no more than 50 actions overall
 	currentState := state
 	for i := 6; i < 6+RIMaxActionsPerGame; i++ {

@@ -21,7 +21,6 @@ func cloneActorsMap(srcActors map[ActorId]Actor) map[ActorId]Actor {
 	return actors
 }
 
-// TODO: This has been changed but is not properly tested
 func countPriorRaisesPerRound(node *RIGameState, round Round) int {
 	if node == nil || node.causingAction != Raise || node.round != round {
 		return 0
@@ -41,4 +40,13 @@ func cardsDiffersByTwo(cards []Card) bool {
 		}
 	}
 	return maxCard-minCard == 2
+}
+
+func actionInSlice(a Action, actions []Action) bool {
+	for _, x := range actions {
+		if a == x {
+			return true
+		}
+	}
+	return false
 }

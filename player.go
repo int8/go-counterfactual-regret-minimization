@@ -68,7 +68,7 @@ type Player struct {
 	id      ActorId
 	card    *Card
 	stack   float64
-	Actions []Action
+	actions []Action
 }
 
 func (chance *Chance) Clone() *Chance {
@@ -77,6 +77,10 @@ func (chance *Chance) Clone() *Chance {
 
 //TODO: it is getting messy, think of structuring it better
 func (player *Player) Act(state *RIGameState, action Action) (child *RIGameState) {
+
+	if !actionInSlice(action, player.GetAvailableActions(state)) {
+		panic("action not available")
+	}
 
 	betSize := state.betSize()
 
@@ -113,11 +117,11 @@ func (player *Player) Act(state *RIGameState, action Action) (child *RIGameState
 
 func (player *Player) GetAvailableActions(state *RIGameState) []Action {
 	player.computeAvailableActions(state)
-	return player.Actions
+	return player.actions
 }
 
 func (player *Player) Clone() *Player {
-	return &Player{card: player.card, id: player.id, stack: player.stack, Actions: nil}
+	return &Player{card: player.card, id: player.id, stack: player.stack, actions: nil}
 }
 
 func (player *Player) Opponent() ActorId {
@@ -135,12 +139,12 @@ func (player *Player) PlaceBet(table *Table, betSize float64) {
 
 func (player *Player) computeAvailableActions(state *RIGameState) {
 
-	if player.Actions != nil {
+	if player.actions != nil {
 		return
 	}
 
 	if state.causingAction == Fold {
-		player.Actions = []Action{}
+		player.actions = []Action{}
 		return
 	}
 	betSize := state.betSize()
@@ -153,32 +157,33 @@ func (player *Player) computeAvailableActions(state *RIGameState) {
 	// whenever betting roung is over (CALL OR CHECK->CHECK)
 	bettingRoundEnded := state.causingAction == Call || (state.causingAction == Check && state.parent.causingAction == Check)
 	if bettingRoundEnded {
-		player.Actions = []Action{}
+		player.actions = []Action{}
 		return
 	}
 
 	// single check implies BET or CHECK
 	if state.causingAction == Check && state.parent.causingAction != Check {
-		player.Actions = []Action{Check}
+		player.actions = []Action{Check}
 		if allowedToBet {
-			player.Actions = append(player.Actions, Bet)
+			player.actions = append(player.actions, Bet)
 		}
 		return
 	}
 
 	// if RAISE/BET, you can CALL FOLD or RAISE (unless there has been 6 prior raises - 3 for each player)
 	if state.causingAction == Bet || state.causingAction == Raise {
-		player.Actions = []Action{Call, Fold}
-		if countPriorRaisesPerRound(state, state.round) < MaxRaises && allowedToRaise {
-			player.Actions = append(player.Actions, Raise)
+		player.actions = []Action{Call, Fold}
+		priorRaisesInCurrentRound := countPriorRaisesPerRound(state, state.round)
+		if priorRaisesInCurrentRound < MaxRaises && allowedToRaise {
+			player.actions = append(player.actions, Raise)
 		}
 		return
 	}
 
 	if state.causingAction == DealPrivateCards || state.causingAction == DealPublicCard {
-		player.Actions = []Action{Check}
+		player.actions = []Action{Check}
 		if allowedToBet {
-			player.Actions = append(player.Actions, Bet)
+			player.actions = append(player.actions, Bet)
 		}
 		return
 	}
