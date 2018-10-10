@@ -580,6 +580,12 @@ func TestGamePlayInformationSetForBAfterCheckBetRaise(t *testing.T) {
 	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
 }
 
+func TestChanceSamplingUtilityTerminates(t *testing.T) {
+	root := createRootForTest(1000., 1000.)
+	routine := CfrComputingRoutine{root: root, regretsSum: nil, sigma: nil, sigmaSum: nil}
+	routine.ComputeNashEquilibriumViaCFR(100)
+}
+
 func testGamePlayAfterEveryAction(node *RIGameState, actionsTests []ActionTestsTriple, t *testing.T) {
 	nodes := []GameState{node}
 	for i := range actionsTests {

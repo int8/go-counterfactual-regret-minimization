@@ -16,21 +16,40 @@ type GameState interface {
 	CurrentInformationSet() InformationSet
 }
 
-// TODO: add side effects, strategies updates to make it compute Nash Equilibrium
-func Utility(node GameState, strategiesSum StrategyMap, cfrRegretsSum StrategyMap) float64 {
-	if node.IsTerminal() {
-		return node.Evaluate()
+type CfrComputingRoutine struct {
+	sigmaSum   StrategyMap
+	sigma      StrategyMap
+	regretsSum StrategyMap
+	root       GameState
+}
+
+func (routine *CfrComputingRoutine) ComputeNashEquilibriumViaCFR(iterations int) {
+	for i := 0; i < iterations; i++ {
+		routine.cfrUtilityRecursive(routine.root, 1, 1)
+	}
+}
+
+// this is still not ready - currently only computes chance sampling utility
+func (routine *CfrComputingRoutine) cfrUtilityRecursive(state GameState, reachA float64, reachB float64) float64 {
+
+	childrenStateUtilities := map[Action]float64{}
+	if state.IsTerminal() {
+		return state.Evaluate()
 	}
 
-	if node.IsChance() {
-		action := node.Actions()[0]
-		return Utility(node.Child(action), strategiesSum, cfrRegretsSum)
+	if state.IsChance() {
+		// TODO: make sure this is random - what if someones deck is not shuffled ?
+		action := state.Actions()[0] // this is fine practically because our FullDeck is shuffled when created
+		return routine.cfrUtilityRecursive(state.Child(action), reachA, reachB)
 	}
 
 	value := 0.0
-	for _, action := range node.Actions() {
-		x := Utility(node.Child(action), strategiesSum, cfrRegretsSum)
-		value += 1. / float64(len(node.Actions())) * x
+	for _, action := range state.Actions() {
+		actionProbability := 1. / float64(len(state.Actions())) // routine.sigma[state.CurrentInformationSet()][action]
+		childStateUtility := routine.cfrUtilityRecursive(state.Child(action), reachA, reachB)
+		value += actionProbability * childStateUtility
+		childrenStateUtilities[action] = childStateUtility
 	}
+
 	return value
 }

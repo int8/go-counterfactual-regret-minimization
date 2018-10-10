@@ -27,6 +27,7 @@ func CreateFullDeck(shuffleInitially bool) *FullDeck {
 	for _, card := range allCards {
 		fullDeck.cards[card] = true
 	}
+	fullDeck.Shuffle()
 	return &fullDeck
 }
 
