@@ -52,11 +52,12 @@ func (chance *Chance) GetAvailableActions(state *RIGameState) []Action {
 		deckSize := int(chance.deck.CardsLeft())
 		actions := make([]Action, deckSize*(deckSize-1))
 		i := 0
-		for _, cardA := range chance.deck.RemainingCards() {
-			for _, cardB := range chance.deck.RemainingCards() {
+		remainingCards := chance.deck.RemainingCards()
+		for _, cardA := range remainingCards {
+			for _, cardB := range remainingCards {
 				{
 					if cardA != cardB {
-						actions[i] = DealPrivateCardsAction{&cardA, &cardB}
+						actions[i] = DealPrivateCardsAction{cardA, cardB}
 						i++
 					}
 				}
@@ -66,10 +67,10 @@ func (chance *Chance) GetAvailableActions(state *RIGameState) []Action {
 	}
 
 	if !state.terminal {
-		cardsLeft := int(chance.deck.CardsLeft())
-		actions := make([]Action, cardsLeft)
-		for i, card := range chance.deck.RemainingCards() {
-			actions[i] = DealPublicCardAction{&card}
+		actions := make([]Action, chance.deck.CardsLeft())
+		remainingCards := chance.deck.RemainingCards()
+		for i, card := range remainingCards {
+			actions[i] = DealPublicCardAction{card}
 		}
 		return actions
 	}

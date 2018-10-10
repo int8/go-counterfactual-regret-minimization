@@ -15,7 +15,7 @@ type RIGameState struct {
 	terminal      bool
 }
 
-func (state *RIGameState) Child(action Action) GameStateHolder {
+func (state *RIGameState) Child(action Action) GameState {
 	return state.actors[state.nextToMove].Act(state, action)
 }
 

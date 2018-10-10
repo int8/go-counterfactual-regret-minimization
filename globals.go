@@ -112,14 +112,14 @@ var QueenClubs = Card{Queen, Clubs}
 var KingClubs = Card{King, Clubs}
 var AceClubs = Card{Ace, Clubs}
 
-var allCards = []Card{C2Hearts, C3Hearts, C4Hearts, C5Hearts, C6Hearts, C7Hearts, C8Hearts,
-	C9Hearts, C10Hearts, JackHearts, QueenHearts, KingHearts, AceHearts,
-	C2Spades, C3Spades, C4Spades, C5Spades, C6Spades, C7Spades, C8Spades,
-	C9Spades, C10Spades, JackSpades, QueenSpades, KingSpades, AceSpades,
-	C2Clubs, C3Clubs, C4Clubs, C5Clubs, C6Clubs, C7Clubs, C8Clubs,
-	C9Clubs, C10Clubs, JackClubs, QueenClubs, KingClubs, AceClubs,
-	C2Diamonds, C3Diamonds, C4Diamonds, C5Diamonds, C6Diamonds, C7Diamonds, C8Diamonds,
-	C9Diamonds, C10Diamonds, JackDiamonds, QueenDiamonds, KingDiamonds, AceDiamonds,
+var allCards = []*Card{&C2Hearts, &C3Hearts, &C4Hearts, &C5Hearts, &C6Hearts, &C7Hearts, &C8Hearts,
+	&C9Hearts, &C10Hearts, &JackHearts, &QueenHearts, &KingHearts, &AceHearts,
+	&C2Spades, &C3Spades, &C4Spades, &C5Spades, &C6Spades, &C7Spades, &C8Spades,
+	&C9Spades, &C10Spades, &JackSpades, &QueenSpades, &KingSpades, &AceSpades,
+	&C2Clubs, &C3Clubs, &C4Clubs, &C5Clubs, &C6Clubs, &C7Clubs, &C8Clubs,
+	&C9Clubs, &C10Clubs, &JackClubs, &QueenClubs, &KingClubs, &AceClubs,
+	&C2Diamonds, &C3Diamonds, &C4Diamonds, &C5Diamonds, &C6Diamonds, &C7Diamonds, &C8Diamonds,
+	&C9Diamonds, &C10Diamonds, &JackDiamonds, &QueenDiamonds, &KingDiamonds, &AceDiamonds,
 }
 
 var CheckAction = PlayerAction{Check}

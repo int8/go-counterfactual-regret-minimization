@@ -581,7 +581,7 @@ func TestGamePlayInformationSetForBAfterCheckBetRaise(t *testing.T) {
 }
 
 func testGamePlayAfterEveryAction(node *RIGameState, actionsTests []ActionTestsTriple, t *testing.T) {
-	nodes := []GameStateHolder{node}
+	nodes := []GameState{node}
 	for i := range actionsTests {
 
 		if !actionsTests[i].preTest(nodes[i].(*RIGameState)) {
@@ -598,7 +598,7 @@ func testGamePlayAfterEveryAction(node *RIGameState, actionsTests []ActionTestsT
 }
 
 func testGamePlayAfterAllActions(node *RIGameState, actions []Action, test func(state *RIGameState) bool, t *testing.T) {
-	nodes := []GameStateHolder{node}
+	nodes := []GameState{node}
 	for i := range actions {
 		child := nodes[i].Child(actions[i])
 		nodes = append(nodes, child)
@@ -612,25 +612,6 @@ func createRootForTest(playerAStack float64, playerBStack float64) *RIGameState 
 	playerA := &Player{id: PlayerA, actions: nil, card: nil, stack: playerAStack}
 	playerB := &Player{id: PlayerB, actions: nil, card: nil, stack: playerBStack}
 	return CreateRoot(playerA, playerB)
-}
-
-func prepareDeckForTest(privateCardA, privateCardB, flopCard, turnCard Card) *FullDeck {
-	d := CreateFullDeck(false)
-	for i := range d.cards {
-		if d.cards[i] == privateCardA {
-			d.cards[0], d.cards[i] = d.cards[i], d.cards[0]
-		}
-		if d.cards[i] == privateCardB {
-			d.cards[1], d.cards[i] = d.cards[i], d.cards[1]
-		}
-		if d.cards[i] == flopCard {
-			d.cards[2], d.cards[i] = d.cards[i], d.cards[2]
-		}
-		if d.cards[i] == turnCard {
-			d.cards[3], d.cards[i] = d.cards[i], d.cards[3]
-		}
-	}
-	return d
 }
 
 func roundCheck(expectedRound Round) func(node *RIGameState) bool {

@@ -6,8 +6,8 @@ type InformationSet [InformationSetSize]byte
 
 type StrategyMap map[InformationSet]map[Action]float64
 
-type GameStateHolder interface {
-	Child(Action Action) GameStateHolder
+type GameState interface {
+	Child(Action Action) GameState
 	Actions() []Action
 	IsChance() bool
 	IsTerminal() bool
@@ -17,9 +17,14 @@ type GameStateHolder interface {
 }
 
 // TODO: add side effects, strategies updates to make it compute Nash Equilibrium
-func Utility(node GameStateHolder, strategiesSum StrategyMap, cfrRegretsSum StrategyMap) float64 {
+func Utility(node GameState, strategiesSum StrategyMap, cfrRegretsSum StrategyMap) float64 {
 	if node.IsTerminal() {
 		return node.Evaluate()
+	}
+
+	if node.IsChance() {
+		action := node.Actions()[0]
+		return Utility(node.Child(action), strategiesSum, cfrRegretsSum)
 	}
 
 	value := 0.0
