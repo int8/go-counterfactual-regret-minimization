@@ -42,7 +42,6 @@ func (routine *CfrComputingRoutine) cfrUtilityRecursive(state GameState, reachA 
 		action := state.Actions()[0] // this is fine practically because our FullDeck is shuffled when created
 		return routine.cfrUtilityRecursive(state.Child(action), reachA, reachB)
 	}
-
 	value := 0.0
 	for _, action := range state.Actions() {
 		actionProbability := 1. / float64(len(state.Actions())) // routine.sigma[state.CurrentInformationSet()][action]

@@ -520,7 +520,6 @@ func TestGamePlayInformationSetForA_NoActions(t *testing.T) {
 	root := createRootForTest(100., 100.)
 
 	actions := []Action{hands}
-
 	targetInformationSet := [InformationSetSize]byte{byte(C10Hearts.name), byte(C10Hearts.suit)}
 	targetInformationSet[6] = byte(hands.Name())
 
