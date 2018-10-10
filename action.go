@@ -1,25 +1,37 @@
 package gocfr
 
-type Action byte
+type ActionName byte
 
-const (
-	NoAction Action = iota
-	DealPublicCard
-	DealPrivateCards
-	Fold
-	Check
-	Bet
-	Call
-	Raise
-)
+type Action interface {
+	Name() ActionName
+}
 
-const MaxRaises int = 3
+type PlayerAction struct {
+	name ActionName
+}
 
-const PreFlopBetSize float64 = 10.
-const PostFlopBetSize float64 = 20.
-const Ante float64 = 5.0
+func (a PlayerAction) Name() ActionName {
+	return a.name
+}
 
-func (m Action) String() string {
+type DealPrivateCardsAction struct {
+	cardA *Card
+	cardB *Card
+}
+
+func (a DealPrivateCardsAction) Name() ActionName {
+	return DealPrivateCards
+}
+
+type DealPublicCardAction struct {
+	card *Card
+}
+
+func (a DealPublicCardAction) Name() ActionName {
+	return DealPublicCard
+}
+
+func (m ActionName) String() string {
 	switch m {
 	case Check:
 		return "Check"

@@ -2,14 +2,6 @@ package gocfr
 
 type Round int8
 
-const (
-	Start Round = iota
-	PreFlop
-	Flop
-	Turn
-	End
-)
-
 func (round Round) NextRound() Round {
 	switch round {
 	case Start:

@@ -4,37 +4,12 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+	"time"
 )
 
 type CardName byte
 
-const NoCardSuit CardSuit = 0
-const (
-	Hearts   CardSuit = 1 + iota // ♥
-	Diamonds                     // ♦
-	Spades                       // ♠
-	Clubs                        // ♣
-)
-
 type CardSuit byte
-
-const NoCardName CardName = 0
-
-const (
-	C2 CardName = 2 + iota
-	C3
-	C4
-	C5
-	C6
-	C7
-	C8
-	C9
-	C10
-	Jack
-	Queen
-	King
-	Ace
-)
 
 type Card struct {
 	name CardName
@@ -42,57 +17,54 @@ type Card struct {
 }
 
 type FullDeck struct {
-	cards            []Card
-	shuffleOrder     []uint8
-	currentCardIndex uint8
+	cards map[*Card]bool
 }
 
 func CreateFullDeck(shuffleInitially bool) *FullDeck {
-	names := [13]CardName{C2, C3, C4, C5, C6, C7, C8, C9, C10, Jack, Queen, King, Ace}
-	suits := [4]CardSuit{Hearts, Diamonds, Spades, Clubs}
-	fullDeck := *new(FullDeck)
 
-	for _, suit := range suits {
-		for _, name := range names {
-			fullDeck.cards = append(fullDeck.cards, Card{name, suit})
-		}
+	fullDeck := *new(FullDeck)
+	fullDeck.cards = make(map[*Card]bool, 52)
+	for _, card := range allCards {
+		fullDeck.cards[card] = true
 	}
-	fullDeck.shuffleOrder = makeRange(0, 51)
-	if shuffleInitially {
-		fullDeck.Shuffle()
-	}
-	fullDeck.currentCardIndex = 0
 	return &fullDeck
 }
 
 func (d *FullDeck) Shuffle() {
-	offset := d.currentCardIndex
-	order := d.shuffleOrder
-	rand.Shuffle(51-int(offset), func(i int, j int) {
-		order[int(offset)+i], order[int(offset)+j] = order[int(offset)+j], order[int(offset)+i]
-	})
+	rand.Seed(time.Now().UTC().UnixNano())
 }
 
-func (d *FullDeck) DealNextCard() *Card {
-
-	cardToBeReturned := d.cards[d.shuffleOrder[d.currentCardIndex]]
-	d.currentCardIndex = (d.currentCardIndex + 1) % 52
-	// if all cards dealt - shuffle
-	if d.currentCardIndex == 0 {
-		d.Shuffle()
+func (d *FullDeck) DealNextRandomCard() *Card {
+	var card *Card
+	i := rand.Intn(len(d.cards))
+	for card = range d.cards {
+		if i == 0 {
+			break
+		}
+		i--
 	}
-	return &cardToBeReturned
+	delete(d.cards, card)
+	return card
 }
 
-func (d *FullDeck) CardsLeft() uint8 {
-	return 52 - d.currentCardIndex
+func (d *FullDeck) CardsLeft() int {
+	return len(d.cards)
+}
+
+func (d *FullDeck) RemainingCards() []*Card {
+	cards := make([]*Card, 0, len(d.cards))
+	for card := range d.cards {
+		cards = append(cards, card)
+	}
+	return cards
 }
 
 func (d *FullDeck) Clone() *FullDeck {
-	shuffleOrder := make([]uint8, len(d.shuffleOrder))
-	copy(shuffleOrder, d.shuffleOrder)
-	// important to reuse d.cards here
-	return &FullDeck{d.cards, shuffleOrder, d.currentCardIndex}
+	cards := make(map[*Card]bool, len(d.cards))
+	for k := range d.cards {
+		cards[k] = true
+	}
+	return &FullDeck{cards}
 }
 
 func (c Card) String() string {
