@@ -1,7 +1,10 @@
 package cfr
 
 import "math"
-import . "github.com/int8/gopoker"
+import (
+	. "github.com/int8/gopoker"
+	"math/rand"
+)
 
 type StrategyMap map[InformationSet]map[ActionName]float64
 
@@ -26,10 +29,26 @@ func (routine *CfrComputingRoutine) cumulateSigma(infSet InformationSet, action 
 	routine.sigmaSum[infSet][action] += value
 }
 
-func (routine *CfrComputingRoutine) ComputeNashEquilibriumViaCFR(iterations int) {
+func (routine *CfrComputingRoutine) ComputeNashEquilibriumViaCFR(iterations int, recursive bool) StrategyMap {
+	nashEquilibrium := StrategyMap{}
 	for i := 0; i < iterations; i++ {
-		routine.cfrUtilityRecursive(routine.root, 1, 1)
+		if recursive {
+			routine.cfrUtilityRecursive(routine.root, 1, 1)
+		}
 	}
+
+	for infSet := range routine.sigmaSum {
+		nashEquilibrium[infSet] = map[ActionName]float64{}
+		infSetSigmaSum := 0.0
+		for action := range routine.sigmaSum[infSet] {
+			infSetSigmaSum += routine.sigmaSum[infSet][action]
+		}
+
+		for action := range routine.sigmaSum[infSet] {
+			nashEquilibrium[infSet][action] = routine.sigmaSum[infSet][action] / infSetSigmaSum
+		}
+	}
+	return nashEquilibrium
 }
 
 func (routine *CfrComputingRoutine) updateSigma(infSet InformationSet) {
@@ -67,7 +86,8 @@ func (routine *CfrComputingRoutine) cfrUtilityRecursive(state GameState, reachA 
 	}
 
 	if state.CurrentActor().GetId() == ChanceId {
-		action := state.Actions()[0] // this is fine *practically* because our FullDeck is shuffled when created
+		actions := state.Actions()
+		action := actions[rand.Intn(len(actions))]
 		return routine.cfrUtilityRecursive(state.Act(action), reachA, reachB)
 	}
 
@@ -79,13 +99,13 @@ func (routine *CfrComputingRoutine) cfrUtilityRecursive(state GameState, reachA 
 		childReachA := 1.0
 		childReachB := 1.0
 		if state.CurrentActor().GetId() == PlayerA {
-			childReachA = childReachA * routine.actionProbability(infSet, action.Name(), len(actions))
+			childReachA *= routine.actionProbability(infSet, action.Name(), len(actions))
 		} else {
-			childReachB = childReachB * routine.actionProbability(infSet, action.Name(), len(actions))
+			childReachB *= routine.actionProbability(infSet, action.Name(), len(actions))
 		}
 
 		childStateUtility := routine.cfrUtilityRecursive(state.Act(action), childReachA, childReachB)
-		value += routine.sigma[infSet][action.Name()] * childStateUtility
+		value += routine.actionProbability(infSet, action.Name(), len(actions)) * childStateUtility
 
 		childrenStateUtilities[action.Name()] = childStateUtility
 	}
@@ -103,5 +123,30 @@ func (routine *CfrComputingRoutine) cfrUtilityRecursive(state GameState, reachA 
 	}
 
 	routine.updateSigma(infSet)
+	return value
+}
+
+func computeUtility(state GameState, sigma StrategyMap) float64 {
+
+	if state.IsTerminal() {
+		return state.Evaluate()
+	}
+
+	if state.CurrentActor().GetId() == ChanceId {
+		actions := state.Actions()
+		eval := 0.0
+		for _, action := range actions {
+			eval += (1. / float64(len(actions))) * computeUtility(state.Act(action), sigma)
+		}
+		return eval
+	}
+
+	infSet := state.InformationSet()
+
+	value := 0.0
+	actions := state.Actions()
+	for _, action := range actions {
+		value += sigma[infSet][action.Name()] * computeUtility(state.Act(action), sigma)
+	}
 	return value
 }

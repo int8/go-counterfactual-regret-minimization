@@ -59,8 +59,8 @@ func (state *RIGameState) Evaluate() float64 {
 	currentActorOpponent := state.playerActor(-state.CurrentActor().GetId())
 	if state.IsTerminal() {
 		if state.causingAction.Name() == Fold {
-			currentActor.UpdateStack(state.table.Pot)
-			return float64(state.nextToMove) * state.table.Pot
+			currentActor.UpdateStack(currentActor.stack + state.table.Pot)
+			return float64(state.nextToMove) * state.table.Pot / 2
 		}
 		currentActorHandValueVector := currentActor.EvaluateHand(state.table)
 		currentActorOpponentHandValueVector := currentActorOpponent.EvaluateHand(state.table)
@@ -69,11 +69,11 @@ func (state *RIGameState) Evaluate() float64 {
 				continue
 			}
 			if currentActorHandValueVector[i] > currentActorOpponentHandValueVector[i] {
-				currentActor.UpdateStack(state.table.Pot)
-				return float64(currentActor.GetId()) * state.table.Pot
+				currentActor.UpdateStack(currentActor.stack + state.table.Pot)
+				return float64(currentActor.GetId()) * state.table.Pot / 2
 			} else {
-				currentActorOpponent.UpdateStack(state.table.Pot)
-				return float64(currentActorOpponent.GetId()) * state.table.Pot
+				currentActorOpponent.UpdateStack(currentActorOpponent.stack + state.table.Pot)
+				return float64(currentActorOpponent.GetId()) * state.table.Pot / 2
 			}
 		}
 		state.playerActor(-state.CurrentActor().GetId()).UpdateStack(state.table.Pot / 2)

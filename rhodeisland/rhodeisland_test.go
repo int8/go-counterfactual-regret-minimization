@@ -265,7 +265,7 @@ func TestGamePlayEvaluationFlushVsNothing(t *testing.T) {
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerA, 100.-singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerB, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, gameResult(2*singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, gameResult(singlePlayerPotContribution), t)
 }
 
 func TestGamePlayEvaluationFlushVsStraightFlush(t *testing.T) {
@@ -280,7 +280,7 @@ func TestGamePlayEvaluationFlushVsStraightFlush(t *testing.T) {
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerA, 100.-singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerB, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, gameResult(-2*singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, gameResult(-singlePlayerPotContribution), t)
 }
 
 func TestGamePlayEvaluationPairVsPairDraw(t *testing.T) {
@@ -311,7 +311,7 @@ func TestGamePlayEvaluationPairVsPairAWins(t *testing.T) {
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerA, 100.-singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerB, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, gameResult(2*singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, gameResult(singlePlayerPotContribution), t)
 }
 
 func TestGamePlayEvaluationPairVsPairBWinsBetterOwnCard(t *testing.T) {
@@ -326,7 +326,7 @@ func TestGamePlayEvaluationPairVsPairBWinsBetterOwnCard(t *testing.T) {
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerA, 100.-singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerB, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, gameResult(-2*singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, gameResult(-singlePlayerPotContribution), t)
 }
 
 func TestGamePlayEvaluationStraightVsStraightAWinsBetterOwnCard(t *testing.T) {
@@ -342,7 +342,7 @@ func TestGamePlayEvaluationStraightVsStraightAWinsBetterOwnCard(t *testing.T) {
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerA, 100.-singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerB, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, gameResult(2*singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, gameResult(singlePlayerPotContribution), t)
 }
 
 func TestGamePlayEvaluationPairVsThreeOfAKindBWins(t *testing.T) {
@@ -359,7 +359,7 @@ func TestGamePlayEvaluationPairVsThreeOfAKindBWins(t *testing.T) {
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerA, 100.-singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerB, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, gameResult(-2*singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, gameResult(-singlePlayerPotContribution), t)
 }
 
 func TestGamePlayEvaluationOwnCardVsOwnCardAWins(t *testing.T) {
@@ -375,7 +375,7 @@ func TestGamePlayEvaluationOwnCardVsOwnCardAWins(t *testing.T) {
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerA, 100.-singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerB, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, gameResult(2*singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, gameResult(singlePlayerPotContribution), t)
 }
 
 func TestGamePlayEvaluationAFoldsOnTurn(t *testing.T) {
@@ -392,7 +392,7 @@ func TestGamePlayEvaluationAFoldsOnTurn(t *testing.T) {
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerA, 100.-singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerB, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, gameResult(-2*singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, gameResult(-singlePlayerPotContribution), t)
 }
 
 func TestGamePlayEvaluationBFoldsOnTurn(t *testing.T) {
@@ -408,7 +408,7 @@ func TestGamePlayEvaluationBFoldsOnTurn(t *testing.T) {
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerA, 100.-singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerB, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, gameResult(2*singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, gameResult(singlePlayerPotContribution), t)
 }
 
 func TestGamePlayEvaluationAFoldsOnFlop(t *testing.T) {
@@ -422,7 +422,7 @@ func TestGamePlayEvaluationAFoldsOnFlop(t *testing.T) {
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerA, 100.-singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerB, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, gameResult(-2*singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, gameResult(-singlePlayerPotContribution), t)
 }
 
 func TestGamePlayEvaluationBFoldsOnFlop(t *testing.T) {
@@ -436,7 +436,7 @@ func TestGamePlayEvaluationBFoldsOnFlop(t *testing.T) {
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerA, 100.-singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerB, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, gameResult(2*singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, gameResult(singlePlayerPotContribution), t)
 }
 
 func TestGamePlayEvaluationAFoldsPreFlop(t *testing.T) {
@@ -449,7 +449,7 @@ func TestGamePlayEvaluationAFoldsPreFlop(t *testing.T) {
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerA, 100.-singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerB, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, gameResult(-2*singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, gameResult(-singlePlayerPotContribution), t)
 }
 
 func TestGamePlayEvaluationBFoldsPreFlop(t *testing.T) {
@@ -462,7 +462,7 @@ func TestGamePlayEvaluationBFoldsPreFlop(t *testing.T) {
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerA, 100.-singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerB, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, gameResult(2*singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, gameResult(singlePlayerPotContribution), t)
 }
 
 func TestGamePlayEvaluationBFoldsPreFlopManyRaises(t *testing.T) {
@@ -475,7 +475,7 @@ func TestGamePlayEvaluationBFoldsPreFlopManyRaises(t *testing.T) {
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerA, 100.-singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, stackEqualsTo(PlayerB, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, gameResult(2*singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, gameResult(singlePlayerPotContribution), t)
 }
 
 func TestGamePlayInformationSetForAAfterRaises(t *testing.T) {

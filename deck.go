@@ -68,6 +68,7 @@ func (d *FullDeck) Clone() Deck {
 	return &FullDeck{cards}
 }
 
+// TODO: what happens when no cards are left ?
 func (d *FullDeck) DealNextRandomCard() *Card {
 	var card *Card
 	i := rand.Intn(len(d.Cards))
