@@ -1,4 +1,4 @@
-package gocfr
+package gopoker
 
 import (
 	"fmt"
@@ -7,25 +7,33 @@ import (
 	"time"
 )
 
+type Deck interface {
+	Shuffle()
+	RemoveCard(card *Card)
+	CardsLeft() int
+	Clone() Deck
+	RemainingCards() []*Card
+}
+
 type CardName byte
 
 type CardSuit byte
 
 type Card struct {
-	name CardName
-	suit CardSuit
+	Name CardName
+	Suit CardSuit
 }
 
 type FullDeck struct {
-	cards map[*Card]bool
+	Cards map[*Card]bool
 }
 
 func CreateFullDeck(shuffleInitially bool) *FullDeck {
 
 	fullDeck := *new(FullDeck)
-	fullDeck.cards = make(map[*Card]bool, 52)
+	fullDeck.Cards = make(map[*Card]bool, 52)
 	for _, card := range allCards {
-		fullDeck.cards[card] = true
+		fullDeck.Cards[card] = true
 	}
 	fullDeck.Shuffle()
 
@@ -36,41 +44,45 @@ func (d *FullDeck) Shuffle() {
 	rand.Seed(time.Now().UTC().UnixNano())
 }
 
-func (d *FullDeck) DealNextRandomCard() *Card {
-	var card *Card
-	i := rand.Intn(len(d.cards))
-	for card = range d.cards {
-		if i == 0 {
-			break
-		}
-		i--
-	}
-	delete(d.cards, card)
-	return card
+func (d *FullDeck) RemoveCard(card *Card) {
+	delete(d.Cards, card)
 }
 
 func (d *FullDeck) CardsLeft() int {
-	return len(d.cards)
+	return len(d.Cards)
 }
 
 func (d *FullDeck) RemainingCards() []*Card {
-	cards := make([]*Card, 0, len(d.cards))
-	for card := range d.cards {
+	cards := make([]*Card, 0, len(d.Cards))
+	for card := range d.Cards {
 		cards = append(cards, card)
 	}
 	return cards
 }
 
-func (d *FullDeck) Clone() *FullDeck {
-	cards := make(map[*Card]bool, len(d.cards))
-	for k := range d.cards {
+func (d *FullDeck) Clone() Deck {
+	cards := make(map[*Card]bool, len(d.Cards))
+	for k := range d.Cards {
 		cards[k] = true
 	}
 	return &FullDeck{cards}
 }
 
+func (d *FullDeck) DealNextRandomCard() *Card {
+	var card *Card
+	i := rand.Intn(len(d.Cards))
+	for card = range d.Cards {
+		if i == 0 {
+			break
+		}
+		i--
+	}
+	d.RemoveCard(card)
+	return card
+}
+
 func (c Card) String() string {
-	return fmt.Sprintf("%v%v", c.suit, c.name)
+	return fmt.Sprintf("%v%v", c.Suit, c.Name)
 }
 
 func (s CardSuit) String() string {

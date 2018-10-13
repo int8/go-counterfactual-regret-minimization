@@ -1,20 +1,20 @@
-package gocfr
+package gopoker
 
 type Table struct {
-	pot   float64
-	cards []Card
+	Pot   float64
+	Cards []Card
 }
 
 func (table *Table) AddToPot(amount float64) {
-	table.pot += amount
+	table.Pot += amount
 }
 
 func (table *Table) DropPublicCard(card *Card) {
-	table.cards = append(table.cards, *card)
+	table.Cards = append(table.Cards, *card)
 }
 
 func (table *Table) Clone() *Table {
-	cards := make([]Card, len(table.cards))
-	copy(cards, table.cards)
-	return &Table{pot: table.pot, cards: cards}
+	cards := make([]Card, len(table.Cards))
+	copy(cards, table.Cards)
+	return &Table{Pot: table.Pot, Cards: cards}
 }

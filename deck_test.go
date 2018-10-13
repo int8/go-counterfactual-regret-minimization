@@ -1,13 +1,14 @@
-package gocfr
+package gopoker
 
 import (
 	"testing"
 )
 
+// TODO: DealNextRandomCard is not used
 func TestFullDeckCardsCount(t *testing.T) {
 	fullDeck := CreateFullDeck(true)
 
-	if len(fullDeck.cards) != 52 {
+	if len(fullDeck.Cards) != 52 {
 		t.Error("Full deck should count 52 cards")
 	}
 
@@ -24,6 +25,7 @@ func TestFullDeckCardsCount(t *testing.T) {
 
 }
 
+// TODO: DealNextRandomCard is not used
 func TestIfAllCardsAreDealt(t *testing.T) {
 	fullDeck := CreateFullDeck(true)
 	cardsMap := map[Card]bool{}

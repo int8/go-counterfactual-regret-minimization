@@ -1,4 +1,4 @@
-package gocfr
+package gopoker
 
 type Round int8
 
@@ -10,7 +10,10 @@ func (round Round) NextRound() Round {
 		return Flop
 	case Flop:
 		return Turn
+	case Turn:
+		return River
 	}
+
 	return End
 }
 
@@ -24,6 +27,8 @@ func (round Round) String() string {
 		return "Preflop"
 	case Turn:
 		return "Turn"
+	case River:
+		return "River"
 	case Flop:
 		return "Flop"
 	}

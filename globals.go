@@ -1,4 +1,10 @@
-package gocfr
+package gopoker
+
+const (
+	PlayerA  ActorId = 1
+	PlayerB          = -PlayerA
+	ChanceId         = 0
+)
 
 const NoCardSuit CardSuit = 0
 const (
@@ -27,21 +33,16 @@ const (
 )
 
 const (
-	PlayerA  ActorId = 1
-	PlayerB          = -PlayerA
-	ChanceId         = 0
-)
-
-const (
 	Start Round = iota
 	PreFlop
 	Flop
 	Turn
+	River
 	End
 )
 
 const (
-	DealPublicCard = 1 + iota
+	DealPublicCards = 1 + iota
 	DealPrivateCards
 	Fold
 	Check
@@ -50,11 +51,7 @@ const (
 	Raise
 )
 
-const MaxRaises = 3
-
-const PreFlopBetSize = 10.
-const PostFlopBetSize = 20.
-const Ante = 5.0
+const InformationSetSize int = 64
 
 var C2Hearts = Card{C2, Hearts}
 var C3Hearts = Card{C3, Hearts}
@@ -121,9 +118,3 @@ var allCards = []*Card{&C2Hearts, &C3Hearts, &C4Hearts, &C5Hearts, &C6Hearts, &C
 	&C2Diamonds, &C3Diamonds, &C4Diamonds, &C5Diamonds, &C6Diamonds, &C7Diamonds, &C8Diamonds,
 	&C9Diamonds, &C10Diamonds, &JackDiamonds, &QueenDiamonds, &KingDiamonds, &AceDiamonds,
 }
-
-var CheckAction = PlayerAction{Check}
-var BetAction = PlayerAction{Bet}
-var CallAction = PlayerAction{Call}
-var RaiseAction = PlayerAction{Raise}
-var FoldAction = PlayerAction{Fold}

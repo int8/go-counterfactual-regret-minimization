@@ -1,6 +1,7 @@
-package gocfr
+package rhodeisland
 
 import (
+	. "github.com/int8/gopoker"
 	"math"
 	"testing"
 )
@@ -29,7 +30,7 @@ func TestGameCreation(t *testing.T) {
 		t.Error("Game root should not be terminal")
 	}
 
-	actions := root.actors[root.nextToMove].GetAvailableActions(root)
+	actions := root.Actions()
 
 	if len(actions) != 52*51 {
 		t.Errorf("Game root should have %v actions available, %v actions available", 52*51, len(actions))
@@ -39,8 +40,8 @@ func TestGameCreation(t *testing.T) {
 
 func TestIfParentsCorrect(t *testing.T) {
 	root := createRootForTest(100., 100.)
-	child := root.actors[root.nextToMove].(*Chance).Act(root, DealPrivateCardsAction{&AceHearts, &KingClubs})
-	if child.parent != root {
+	child := root.Act(DealPrivateCardsAction{&AceHearts, &KingClubs})
+	if child.Parent() != root {
 		t.Error("Root child should have root as a parent")
 	}
 }
@@ -234,21 +235,21 @@ func TestIfCardsGoToPlayers(t *testing.T) {
 
 func TestGamePlay_CheckIfChildPointersDifferFromParentsPointers(t *testing.T) {
 	root := createRootForTest(100., 100.)
-	child := root.actors[root.nextToMove].(*Chance).Act(root, DealPrivateCardsAction{&AceHearts, &KingClubs})
+	child := root.Act(DealPrivateCardsAction{&AceHearts, &KingClubs})
 
-	if child.actors[ChanceId] == root.actors[ChanceId] {
+	if child.(*RIGameState).actors[ChanceId] == root.actors[ChanceId] {
 		t.Error("chance actor refers to the same value in both child and parent")
 	}
 
-	if child.actors[PlayerA] == root.actors[PlayerA] {
+	if child.(*RIGameState).actors[PlayerA] == root.actors[PlayerA] {
 		t.Error("PlayerA actor refers to the same value in both child and parent")
 	}
 
-	if child.actors[PlayerB] == root.actors[PlayerB] {
+	if child.(*RIGameState).actors[PlayerB] == root.actors[PlayerB] {
 		t.Error("PlayerB actor refers to the same value in both child and parent")
 	}
 
-	if child.table == root.table {
+	if child.(*RIGameState).table == root.table {
 		t.Error("table should be different for child and parent")
 	}
 }
@@ -482,7 +483,7 @@ func TestGamePlayInformationSetForAAfterRaises(t *testing.T) {
 	root := createRootForTest(100., 100.)
 	actions := []Action{hands, CheckAction, BetAction, RaiseAction, RaiseAction}
 
-	targetInformationSet := [InformationSetSize]byte{byte(C10Hearts.name), byte(C10Hearts.suit)}
+	targetInformationSet := [InformationSetSize]byte{byte(C10Hearts.Name), byte(C10Hearts.Suit)}
 	targetInformationSet[6] = byte(Raise)
 	targetInformationSet[7] = byte(Raise)
 	targetInformationSet[8] = byte(Bet)
@@ -500,13 +501,13 @@ func TestGamePlayInformationSetForB_ChecksOnly(t *testing.T) {
 	root := createRootForTest(100., 100.)
 
 	actions := []Action{hands, CheckAction, CheckAction, flop, CheckAction, CheckAction, turn, CheckAction}
-	targetInformationSet := [InformationSetSize]byte{byte(KingClubs.name), byte(KingClubs.suit), byte(KingDiamonds.name),
-		byte(KingDiamonds.suit), byte(KingSpades.name), byte(KingSpades.suit)}
+	targetInformationSet := [InformationSetSize]byte{byte(KingClubs.Name), byte(KingClubs.Suit), byte(KingDiamonds.Name),
+		byte(KingDiamonds.Suit), byte(KingSpades.Name), byte(KingSpades.Suit)}
 	targetInformationSet[6] = byte(Check)
-	targetInformationSet[7] = byte(DealPublicCard)
+	targetInformationSet[7] = byte(DealPublicCards)
 	targetInformationSet[8] = byte(Check)
 	targetInformationSet[9] = byte(Check)
-	targetInformationSet[10] = byte(DealPublicCard)
+	targetInformationSet[10] = byte(DealPublicCards)
 	targetInformationSet[11] = byte(Check)
 	targetInformationSet[12] = byte(Check)
 	targetInformationSet[13] = byte(DealPrivateCards)
@@ -520,7 +521,7 @@ func TestGamePlayInformationSetForA_NoActions(t *testing.T) {
 	root := createRootForTest(100., 100.)
 
 	actions := []Action{hands}
-	targetInformationSet := [InformationSetSize]byte{byte(C10Hearts.name), byte(C10Hearts.suit)}
+	targetInformationSet := [InformationSetSize]byte{byte(C10Hearts.Name), byte(C10Hearts.Suit)}
 	targetInformationSet[6] = byte(hands.Name())
 
 	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
@@ -533,7 +534,7 @@ func TestGamePlayInformationSetForB_SingleCheck(t *testing.T) {
 
 	actions := []Action{hands, CheckAction}
 
-	targetInformationSet := [InformationSetSize]byte{byte(AceSpades.name), byte(AceSpades.suit)}
+	targetInformationSet := [InformationSetSize]byte{byte(AceSpades.Name), byte(AceSpades.Suit)}
 	targetInformationSet[6] = byte(Check)
 	targetInformationSet[7] = byte(DealPrivateCards)
 
@@ -549,13 +550,13 @@ func TestGamePlayInformationSetForB_BetCallAndChecksOnly(t *testing.T) {
 
 	actions := []Action{hands, CheckAction, BetAction, CallAction, flop, CheckAction, CheckAction, turn, CheckAction}
 
-	targetInformationSet := [InformationSetSize]byte{byte(KingClubs.name), byte(KingClubs.suit), byte(KingDiamonds.name),
-		byte(KingDiamonds.suit), byte(KingSpades.name), byte(KingSpades.suit)}
+	targetInformationSet := [InformationSetSize]byte{byte(KingClubs.Name), byte(KingClubs.Suit), byte(KingDiamonds.Name),
+		byte(KingDiamonds.Suit), byte(KingSpades.Name), byte(KingSpades.Suit)}
 	targetInformationSet[6] = byte(Check)
-	targetInformationSet[7] = byte(DealPublicCard)
+	targetInformationSet[7] = byte(DealPublicCards)
 	targetInformationSet[8] = byte(Check)
 	targetInformationSet[9] = byte(Check)
-	targetInformationSet[10] = byte(DealPublicCard)
+	targetInformationSet[10] = byte(DealPublicCards)
 	targetInformationSet[11] = byte(Call)
 	targetInformationSet[12] = byte(Bet)
 	targetInformationSet[13] = byte(Check)
@@ -570,7 +571,7 @@ func TestGamePlayInformationSetForBAfterCheckBetRaise(t *testing.T) {
 	root := createRootForTest(100., 100.)
 
 	actions := []Action{hands, CheckAction, BetAction, RaiseAction}
-	targetInformationSet := [InformationSetSize]byte{byte(QueenClubs.name), byte(QueenClubs.suit)}
+	targetInformationSet := [InformationSetSize]byte{byte(QueenClubs.Name), byte(QueenClubs.Suit)}
 	targetInformationSet[6] = byte(Raise)
 	targetInformationSet[7] = byte(Bet)
 	targetInformationSet[8] = byte(Check)
@@ -579,11 +580,11 @@ func TestGamePlayInformationSetForBAfterCheckBetRaise(t *testing.T) {
 	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
 }
 
-func TestChanceSamplingUtilityTerminates(t *testing.T) {
-	root := createRootForTest(1000., 1000.)
-	routine := CfrComputingRoutine{root: root, regretsSum: nil, sigma: nil, sigmaSum: nil}
-	routine.ComputeNashEquilibriumViaCFR(100)
-}
+//func TestChanceSamplingUtilityTerminates(t *testing.T) {
+//	root := createRootForTest(1000., 1000.)
+//	routine := CfrComputingRoutine{root: root, regretsSum: StrategyMap{}, sigma: StrategyMap{}, sigmaSum: StrategyMap{}}
+//	routine.ComputeNashEquilibriumViaCFR(100)
+//}
 
 func testGamePlayAfterEveryAction(node *RIGameState, actionsTests []ActionTestsTriple, t *testing.T) {
 	nodes := []GameState{node}
@@ -593,7 +594,7 @@ func testGamePlayAfterEveryAction(node *RIGameState, actionsTests []ActionTestsT
 			t.Errorf("pre action test function  #%v did not pass", i)
 		}
 
-		child := nodes[i].Child(actionsTests[i].Action)
+		child := nodes[i].Act(actionsTests[i].Action)
 		nodes = append(nodes, child)
 
 		if !actionsTests[i].postTest(child.(*RIGameState)) {
@@ -605,7 +606,7 @@ func testGamePlayAfterEveryAction(node *RIGameState, actionsTests []ActionTestsT
 func testGamePlayAfterAllActions(node *RIGameState, actions []Action, test func(state *RIGameState) bool, t *testing.T) {
 	nodes := []GameState{node}
 	for i := range actions {
-		child := nodes[i].Child(actions[i])
+		child := nodes[i].Act(actions[i])
 		nodes = append(nodes, child)
 	}
 	if !test(nodes[len(nodes)-1].(*RIGameState)) {
@@ -616,7 +617,7 @@ func testGamePlayAfterAllActions(node *RIGameState, actions []Action, test func(
 func createRootForTest(playerAStack float64, playerBStack float64) *RIGameState {
 	playerA := &Player{id: PlayerA, actions: nil, card: nil, stack: playerAStack}
 	playerB := &Player{id: PlayerB, actions: nil, card: nil, stack: playerBStack}
-	return CreateRoot(playerA, playerB)
+	return root(playerA, playerB)
 }
 
 func roundCheck(expectedRound Round) func(node *RIGameState) bool {
@@ -636,7 +637,7 @@ func gameResult(result float64) func(state *RIGameState) bool {
 
 func noRaiseAvailable() func(state *RIGameState) bool {
 	return func(state *RIGameState) bool {
-		Actions := state.CurrentActor().GetAvailableActions(state)
+		Actions := state.Actions()
 		for _, m := range Actions {
 			if m.Name() == Raise {
 				return false
@@ -660,7 +661,7 @@ func stackEqualsTo(player ActorId, stack float64) func(state *RIGameState) bool 
 
 func potEqualsTo(pot float64) func(state *RIGameState) bool {
 	return func(state *RIGameState) bool {
-		return math.Abs(state.table.pot-pot) < 1e-9
+		return math.Abs(state.table.Pot-pot) < 1e-9
 	}
 }
 
@@ -672,7 +673,7 @@ func noTest() func(state *RIGameState) bool {
 
 func onlyCheckAvailable() func(state *RIGameState) bool {
 	return func(state *RIGameState) bool {
-		Actions := state.CurrentActor().GetAvailableActions(state)
+		Actions := state.Actions()
 		if len(Actions) == 1 && Actions[0].Name() == Check {
 			return true
 		}
@@ -681,7 +682,7 @@ func onlyCheckAvailable() func(state *RIGameState) bool {
 }
 func checkAndBetAvailable() func(state *RIGameState) bool {
 	return func(state *RIGameState) bool {
-		Actions := state.CurrentActor().GetAvailableActions(state)
+		Actions := state.Actions()
 		if len(Actions) == 2 && Actions[0].Name() == Check && Actions[1].Name() == Bet {
 			return true
 		}
@@ -697,19 +698,19 @@ func privateCards(playerACard Card, playerBCard Card) func(state *RIGameState) b
 
 func flopCard(publicFlopCard Card) func(state *RIGameState) bool {
 	return func(state *RIGameState) bool {
-		return state.table.cards[0] == publicFlopCard
+		return state.table.Cards[0] == publicFlopCard
 	}
 }
 
 func turnCard(publicTurnCard Card) func(state *RIGameState) bool {
 	return func(state *RIGameState) bool {
-		return state.table.cards[1] == publicTurnCard
+		return state.table.Cards[1] == publicTurnCard
 	}
 }
 
 func lastInformationSet(informationSet [InformationSetSize]byte) func(state *RIGameState) bool {
 	return func(state *RIGameState) bool {
-		currentInformationSet := state.CurrentInformationSet()
+		currentInformationSet := state.InformationSet()
 		return currentInformationSet == informationSet
 	}
 }
