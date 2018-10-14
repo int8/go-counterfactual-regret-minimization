@@ -614,7 +614,7 @@ func testGamePlayAfterAllActions(node *RIGameState, actions []Action, test func(
 	}
 }
 
-func createRootForTest(playerAStack float64, playerBStack float64) *RIGameState {
+func createRootForTest(playerAStack float32, playerBStack float32) *RIGameState {
 	playerA := &Player{id: PlayerA, actions: nil, card: nil, stack: playerAStack}
 	playerB := &Player{id: PlayerB, actions: nil, card: nil, stack: playerBStack}
 	return root(playerA, playerB)
@@ -628,7 +628,7 @@ func gameEnd() func(state *RIGameState) bool {
 	return func(state *RIGameState) bool { return state.IsTerminal() }
 }
 
-func gameResult(result float64) func(state *RIGameState) bool {
+func gameResult(result float32) func(state *RIGameState) bool {
 	return func(state *RIGameState) bool {
 		evaluation := state.Evaluate()
 		return evaluation == result
@@ -653,15 +653,15 @@ func actorToMove(actorId ActorId) func(state *RIGameState) bool {
 	}
 }
 
-func stackEqualsTo(player ActorId, stack float64) func(state *RIGameState) bool {
+func stackEqualsTo(player ActorId, stack float32) func(state *RIGameState) bool {
 	return func(state *RIGameState) bool {
-		return math.Abs(state.actors[player].(*Player).stack-stack) < 1e-9
+		return math.Abs(float64(state.actors[player].(*Player).stack-stack)) < 1e-9
 	}
 }
 
-func potEqualsTo(pot float64) func(state *RIGameState) bool {
+func potEqualsTo(pot float32) func(state *RIGameState) bool {
 	return func(state *RIGameState) bool {
-		return math.Abs(state.table.Pot-pot) < 1e-9
+		return math.Abs(float64(state.table.Pot-pot)) < 1e-9
 	}
 }
 

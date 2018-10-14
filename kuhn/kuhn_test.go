@@ -325,7 +325,7 @@ func testGamePlayAfterAllActions(node *KuhnGameState, actions []Action, test fun
 	}
 }
 
-func createRootForTest(playerAStack float64, playerBStack float64) *KuhnGameState {
+func createRootForTest(playerAStack float32, playerBStack float32) *KuhnGameState {
 	playerA := &Player{Id: PlayerA, Actions: nil, Card: nil, Stack: playerAStack}
 	playerB := &Player{Id: PlayerB, Actions: nil, Card: nil, Stack: playerBStack}
 	return Root(playerA, playerB)
@@ -339,7 +339,7 @@ func gameEnd() func(state *KuhnGameState) bool {
 	return func(state *KuhnGameState) bool { return state.IsTerminal() }
 }
 
-func gameResult(result float64) func(state *KuhnGameState) bool {
+func gameResult(result float32) func(state *KuhnGameState) bool {
 	return func(state *KuhnGameState) bool {
 		evaluation := state.Evaluate()
 		return evaluation == result
@@ -352,22 +352,22 @@ func actorToMove(actorId ActorId) func(state *KuhnGameState) bool {
 	}
 }
 
-func stackEqualsTo(player ActorId, stack float64) func(state *KuhnGameState) bool {
+func stackEqualsTo(player ActorId, stack float32) func(state *KuhnGameState) bool {
 	return func(state *KuhnGameState) bool {
-		return math.Abs(state.actors[player].(*Player).Stack-stack) < 1e-9
+		return math.Abs(float64(state.actors[player].(*Player).Stack-stack)) < 1e-9
 	}
 }
 
-func stackAfterEvaluationEqualsTo(player ActorId, stack float64) func(state *KuhnGameState) bool {
+func stackAfterEvaluationEqualsTo(player ActorId, stack float32) func(state *KuhnGameState) bool {
 	return func(state *KuhnGameState) bool {
 		state.Evaluate()
-		return math.Abs(state.actors[player].(*Player).Stack-stack) < 1e-9
+		return math.Abs(float64(state.actors[player].(*Player).Stack-stack)) < 1e-9
 	}
 }
 
-func potEqualsTo(pot float64) func(state *KuhnGameState) bool {
+func potEqualsTo(pot float32) func(state *KuhnGameState) bool {
 	return func(state *KuhnGameState) bool {
-		return math.Abs(state.table.Pot-pot) < 1e-9
+		return math.Abs(float64(state.table.Pot-pot)) < 1e-9
 	}
 }
 

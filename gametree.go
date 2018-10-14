@@ -9,5 +9,5 @@ type GameState interface {
 	Actions() []Action
 	IsTerminal() bool
 	CurrentActor() Actor
-	Evaluate() float64
+	Evaluate() float32
 }

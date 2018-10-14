@@ -54,23 +54,23 @@ func (state *KuhnGameState) CurrentActor() Actor {
 }
 
 //TODO: test it carefully
-func (state *KuhnGameState) Evaluate() float64 {
+func (state *KuhnGameState) Evaluate() float32 {
 	currentActor := state.playerActor(state.CurrentActor().GetId())
 	currentActorOpponent := state.playerActor(-state.CurrentActor().GetId())
 	if state.IsTerminal() {
 		if state.causingAction.Name() == Fold {
 			currentActor.UpdateStack(currentActor.Stack + state.table.Pot)
-			return float64(-state.parent.nextToMove) * (state.table.Pot / 2)
+			return float32(-state.parent.nextToMove) * (state.table.Pot / 2)
 		}
 		currentActorHandValue := currentActor.EvaluateHand(state.table)
 		currentActorOpponentHandValue := currentActorOpponent.EvaluateHand(state.table)
 
 		if currentActorHandValue > currentActorOpponentHandValue {
 			currentActor.UpdateStack(currentActor.Stack + state.table.Pot)
-			return float64(currentActor.GetId()) * (state.table.Pot / 2)
+			return float32(currentActor.GetId()) * (state.table.Pot / 2)
 		} else {
 			currentActorOpponent.UpdateStack(currentActorOpponent.Stack + state.table.Pot)
-			return float64(currentActorOpponent.GetId()) * (state.table.Pot / 2)
+			return float32(currentActorOpponent.GetId()) * (state.table.Pot / 2)
 		}
 	}
 	currentActor.UpdateStack(currentActor.Stack + state.table.Pot/2)
@@ -97,7 +97,7 @@ func (state *KuhnGameState) InformationSet() InformationSet {
 	return InformationSet(informationSet)
 }
 
-func (state *KuhnGameState) stack(actor ActorId) float64 {
+func (state *KuhnGameState) stack(actor ActorId) float32 {
 	return state.actors[actor].(*Player).Stack
 }
 
@@ -137,7 +137,7 @@ func (state *KuhnGameState) actAsPlayer(action Action) GameState {
 	return child
 }
 
-func (state *KuhnGameState) betSize() float64 {
+func (state *KuhnGameState) betSize() float32 {
 	return 1.0
 }
 

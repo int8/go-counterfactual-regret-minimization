@@ -8,8 +8,8 @@ var CallAction = PlayerAction{Call}
 var RaiseAction = PlayerAction{Raise}
 var FoldAction = PlayerAction{Fold}
 
-const PreFlopBetSize = 10.
-const PostFlopBetSize = 20.
+const PreFlopBetSize float32 = 10.
+const PostFlopBetSize float32 = 20.
 
 const MaxRaises = 3
-const Ante = 5.0
+const Ante float32 = 5.0

@@ -17,7 +17,7 @@ func (chance *Chance) GetId() ActorId {
 type Player struct {
 	id      ActorId
 	card    *Card
-	stack   float64
+	stack   float32
 	actions []Action
 }
 
@@ -25,7 +25,7 @@ func (player *Player) GetId() ActorId {
 	return player.id
 }
 
-func (player *Player) UpdateStack(stack float64) {
+func (player *Player) UpdateStack(stack float32) {
 	player.stack = stack
 }
 
@@ -45,7 +45,7 @@ func (player *Player) CollectPrivateCard(card *Card) {
 	player.card = card
 }
 
-func (player *Player) PlaceBet(table *Table, betSize float64) {
+func (player *Player) PlaceBet(table *Table, betSize float32) {
 	table.AddToPot(betSize)
 	player.stack -= betSize
 }

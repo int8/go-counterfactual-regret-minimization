@@ -1,11 +1,11 @@
 package gopoker
 
 type Table struct {
-	Pot   float64
+	Pot   float32
 	Cards []Card
 }
 
-func (table *Table) AddToPot(amount float64) {
+func (table *Table) AddToPot(amount float32) {
 	table.Pot += amount
 }
 

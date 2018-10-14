@@ -54,13 +54,13 @@ func (state *RIGameState) CurrentActor() Actor {
 }
 
 //TODO: test it carefully
-func (state *RIGameState) Evaluate() float64 {
+func (state *RIGameState) Evaluate() float32 {
 	currentActor := state.playerActor(state.CurrentActor().GetId())
 	currentActorOpponent := state.playerActor(-state.CurrentActor().GetId())
 	if state.IsTerminal() {
 		if state.causingAction.Name() == Fold {
 			currentActor.UpdateStack(currentActor.stack + state.table.Pot)
-			return float64(state.nextToMove) * state.table.Pot / 2
+			return float32(state.nextToMove) * state.table.Pot / 2
 		}
 		currentActorHandValueVector := currentActor.EvaluateHand(state.table)
 		currentActorOpponentHandValueVector := currentActorOpponent.EvaluateHand(state.table)
@@ -70,10 +70,10 @@ func (state *RIGameState) Evaluate() float64 {
 			}
 			if currentActorHandValueVector[i] > currentActorOpponentHandValueVector[i] {
 				currentActor.UpdateStack(currentActor.stack + state.table.Pot)
-				return float64(currentActor.GetId()) * state.table.Pot / 2
+				return float32(currentActor.GetId()) * state.table.Pot / 2
 			} else {
 				currentActorOpponent.UpdateStack(currentActorOpponent.stack + state.table.Pot)
-				return float64(currentActorOpponent.GetId()) * state.table.Pot / 2
+				return float32(currentActorOpponent.GetId()) * state.table.Pot / 2
 			}
 		}
 		state.playerActor(-state.CurrentActor().GetId()).UpdateStack(state.table.Pot / 2)
@@ -114,7 +114,7 @@ func (state *RIGameState) InformationSet() InformationSet {
 	return InformationSet(informationSet)
 }
 
-func (state *RIGameState) stack(actor ActorId) float64 {
+func (state *RIGameState) stack(actor ActorId) float32 {
 	return state.actors[actor].(*Player).stack
 }
 
@@ -167,7 +167,7 @@ func (state *RIGameState) actAsPlayer(action Action) GameState {
 
 }
 
-func (state *RIGameState) betSize() float64 {
+func (state *RIGameState) betSize() float32 {
 	if state.round < Flop {
 		return PreFlopBetSize
 	}

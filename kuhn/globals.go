@@ -7,5 +7,5 @@ var BetAction = PlayerAction{Bet}
 var CallAction = PlayerAction{Call}
 var FoldAction = PlayerAction{Fold}
 
-const BetSize float64 = 1.0
-const Ante = 1.0
+const BetSize float32 = 1.0
+const Ante float32 = 1.0
