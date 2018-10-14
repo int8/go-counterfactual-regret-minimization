@@ -59,7 +59,7 @@ func (state *RIGameState) Evaluate() float32 {
 	currentActorOpponent := state.playerActor(-state.CurrentActor().GetId())
 	if state.IsTerminal() {
 		if state.causingAction.Name() == Fold {
-			currentActor.UpdateStack(currentActor.stack + state.table.Pot)
+			currentActor.UpdateStack(currentActor.Stack + state.table.Pot)
 			return float32(state.nextToMove) * state.table.Pot / 2
 		}
 		currentActorHandValueVector := currentActor.EvaluateHand(state.table)
@@ -69,10 +69,10 @@ func (state *RIGameState) Evaluate() float32 {
 				continue
 			}
 			if currentActorHandValueVector[i] > currentActorOpponentHandValueVector[i] {
-				currentActor.UpdateStack(currentActor.stack + state.table.Pot)
+				currentActor.UpdateStack(currentActor.Stack + state.table.Pot)
 				return float32(currentActor.GetId()) * state.table.Pot / 2
 			} else {
-				currentActorOpponent.UpdateStack(currentActorOpponent.stack + state.table.Pot)
+				currentActorOpponent.UpdateStack(currentActorOpponent.Stack + state.table.Pot)
 				return float32(currentActorOpponent.GetId()) * state.table.Pot / 2
 			}
 		}
@@ -85,8 +85,8 @@ func (state *RIGameState) Evaluate() float32 {
 
 func (state *RIGameState) InformationSet() InformationSet {
 
-	privateCardName := byte(state.playerActor(state.nextToMove).card.Name)
-	privateCardSuit := byte(state.playerActor(state.nextToMove).card.Suit)
+	privateCardName := byte(state.playerActor(state.nextToMove).Card.Name)
+	privateCardSuit := byte(state.playerActor(state.nextToMove).Card.Suit)
 	flopCardName := byte(NoCardName)
 	flopCardSuit := byte(NoCardSuit)
 	turnCardName := byte(NoCardName)
@@ -115,7 +115,7 @@ func (state *RIGameState) InformationSet() InformationSet {
 }
 
 func (state *RIGameState) stack(actor ActorId) float32 {
-	return state.actors[actor].(*Player).stack
+	return state.actors[actor].(*Player).Stack
 }
 
 func (state *RIGameState) actAsChance(action Action) GameState {
@@ -174,7 +174,7 @@ func (state *RIGameState) betSize() float32 {
 	return PostFlopBetSize
 }
 
-func root(playerA *Player, playerB *Player) *RIGameState {
+func Root(playerA *Player, playerB *Player) *RIGameState {
 	chance := &Chance{id: ChanceId, deck: CreateFullDeck(true)}
 
 	actors := map[ActorId]Actor{PlayerA: playerA, PlayerB: playerB, ChanceId: chance}
@@ -244,49 +244,49 @@ func (state *RIGameState) chanceActions(chance *Chance) []Action {
 func (state *RIGameState) playerActions(player *Player) []Action {
 
 	if state.causingAction.Name() == Fold {
-		player.actions = []Action{}
-		return player.actions
+		player.Actions = []Action{}
+		return player.Actions
 	}
 
 	betSize := state.betSize()
 
 	opponentStack := state.stack(player.Opponent())
 
-	allowedToBet := (player.stack >= betSize) && (opponentStack >= betSize)
-	allowedToRaise := (player.stack >= 2*betSize) && (opponentStack >= 2*betSize)
+	allowedToBet := (player.Stack >= betSize) && (opponentStack >= betSize)
+	allowedToRaise := (player.Stack >= 2*betSize) && (opponentStack >= 2*betSize)
 
 	// whenever betting roung is over (CALL OR CHECK->CHECK)
 	bettingRoundEnded := state.causingAction.Name() == Call || (state.causingAction.Name() == Check && state.parent.causingAction.Name() == Check)
 	if bettingRoundEnded {
-		player.actions = []Action{}
-		return player.actions
+		player.Actions = []Action{}
+		return player.Actions
 	}
 
 	// single check implies BET or CHECK
 	if state.causingAction.Name() == Check && state.parent.causingAction.Name() != Check {
-		player.actions = []Action{CheckAction}
+		player.Actions = []Action{CheckAction}
 		if allowedToBet {
-			player.actions = append(player.actions, BetAction)
+			player.Actions = append(player.Actions, BetAction)
 		}
-		return player.actions
+		return player.Actions
 	}
 
 	// RAISE/BET, you can CALL FOLD or RAISE (unless there has been 6 prior raises - 3 for each player)
 	if state.causingAction.Name() == Bet || state.causingAction.Name() == Raise {
-		player.actions = []Action{CallAction, FoldAction}
+		player.Actions = []Action{CallAction, FoldAction}
 		priorRaisesInCurrentRound := countPriorRaisesPerRound(state, state.round)
 		if priorRaisesInCurrentRound < MaxRaises && allowedToRaise {
-			player.actions = append(player.actions, RaiseAction)
+			player.Actions = append(player.Actions, RaiseAction)
 		}
-		return player.actions
+		return player.Actions
 	}
 
 	if state.causingAction.Name() == DealPrivateCards || state.causingAction.Name() == DealPublicCards {
-		player.actions = []Action{CheckAction}
+		player.Actions = []Action{CheckAction}
 		if allowedToBet {
-			player.actions = append(player.actions, BetAction)
+			player.Actions = append(player.Actions, BetAction)
 		}
-		return player.actions
+		return player.Actions
 	}
 	panic(errors.New("Code not reachable."))
 }

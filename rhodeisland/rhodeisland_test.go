@@ -615,9 +615,9 @@ func testGamePlayAfterAllActions(node *RIGameState, actions []Action, test func(
 }
 
 func createRootForTest(playerAStack float32, playerBStack float32) *RIGameState {
-	playerA := &Player{id: PlayerA, actions: nil, card: nil, stack: playerAStack}
-	playerB := &Player{id: PlayerB, actions: nil, card: nil, stack: playerBStack}
-	return root(playerA, playerB)
+	playerA := &Player{Id: PlayerA, Actions: nil, Card: nil, Stack: playerAStack}
+	playerB := &Player{Id: PlayerB, Actions: nil, Card: nil, Stack: playerBStack}
+	return Root(playerA, playerB)
 }
 
 func roundCheck(expectedRound Round) func(node *RIGameState) bool {
@@ -655,7 +655,7 @@ func actorToMove(actorId ActorId) func(state *RIGameState) bool {
 
 func stackEqualsTo(player ActorId, stack float32) func(state *RIGameState) bool {
 	return func(state *RIGameState) bool {
-		return math.Abs(float64(state.actors[player].(*Player).stack-stack)) < 1e-9
+		return math.Abs(float64(state.actors[player].(*Player).Stack-stack)) < 1e-9
 	}
 }
 
@@ -692,7 +692,7 @@ func checkAndBetAvailable() func(state *RIGameState) bool {
 
 func privateCards(playerACard Card, playerBCard Card) func(state *RIGameState) bool {
 	return func(state *RIGameState) bool {
-		return *(state.actors[PlayerA].(*Player).card) == playerACard && *(state.actors[PlayerB].(*Player).card) == playerBCard
+		return *(state.actors[PlayerA].(*Player).Card) == playerACard && *(state.actors[PlayerB].(*Player).Card) == playerBCard
 	}
 }
 

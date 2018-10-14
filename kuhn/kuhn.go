@@ -76,7 +76,6 @@ func (state *KuhnGameState) Evaluate() float32 {
 	currentActor.UpdateStack(currentActor.Stack + state.table.Pot/2)
 	currentActorOpponent.UpdateStack(currentActor.Stack + state.table.Pot/2)
 	return 0.0
-	panic(errors.New("RIGameState is not terminal"))
 }
 
 func (state *KuhnGameState) InformationSet() InformationSet {

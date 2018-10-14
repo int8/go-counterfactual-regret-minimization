@@ -51,7 +51,7 @@ const (
 	Raise
 )
 
-const InformationSetSize int = 64
+const InformationSetSize int = 32
 
 var C2Hearts = Card{C2, Hearts}
 var C3Hearts = Card{C3, Hearts}

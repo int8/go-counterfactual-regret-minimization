@@ -1,8 +1,10 @@
 package cfr
 
 import (
-	. "github.com/int8/gopoker"
-	. "github.com/int8/gopoker/kuhn"
+	"fmt"
+	"github.com/int8/gopoker"
+	"github.com/int8/gopoker/kuhn"
+	"github.com/int8/gopoker/rhodeisland"
 	"testing"
 )
 
@@ -16,8 +18,21 @@ func TestKuhnPokerNashEquilibriumMatchesExpectedUtility(t *testing.T) {
 	}
 }
 
-func createRootForKuhnPokerTest(playerAStack float32, playerBStack float32) *KuhnGameState {
-	playerA := &Player{Id: PlayerA, Actions: nil, Card: nil, Stack: playerAStack}
-	playerB := &Player{Id: PlayerB, Actions: nil, Card: nil, Stack: playerBStack}
-	return Root(playerA, playerB)
+func TestRhodeIslandNashEquilibriumComputation(t *testing.T) {
+	root := createRootForRhodeIslandPokerTest(1000., 1000.)
+	routine := CfrComputingRoutine{root: root, regretsSum: StrategyMap{}, sigma: StrategyMap{}, sigmaSum: StrategyMap{}}
+	ne := routine.ComputeNashEquilibriumViaCFR(100, true)
+	fmt.Println(ne)
+}
+
+func createRootForKuhnPokerTest(playerAStack float32, playerBStack float32) *kuhn.KuhnGameState {
+	playerA := &kuhn.Player{Id: gopoker.PlayerA, Actions: nil, Card: nil, Stack: playerAStack}
+	playerB := &kuhn.Player{Id: gopoker.PlayerB, Actions: nil, Card: nil, Stack: playerBStack}
+	return kuhn.Root(playerA, playerB)
+}
+
+func createRootForRhodeIslandPokerTest(playerAStack float32, playerBStack float32) *rhodeisland.RIGameState {
+	playerA := &rhodeisland.Player{Id: gopoker.PlayerA, Actions: nil, Card: nil, Stack: playerAStack}
+	playerB := &rhodeisland.Player{Id: gopoker.PlayerB, Actions: nil, Card: nil, Stack: playerBStack}
+	return rhodeisland.Root(playerA, playerB)
 }
