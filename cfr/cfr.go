@@ -1,7 +1,6 @@
 package cfr
 
 import (
-	"fmt"
 	. "github.com/int8/gopoker"
 	"math/rand"
 )
@@ -34,12 +33,9 @@ func (routine *CfrComputingRoutine) ComputeNashEquilibriumViaCFR(iterations int,
 	for i := 0; i < iterations; i++ {
 		if recursive {
 			routine.cfrUtilityRecursive(routine.root, 1, 1)
-			//fmt.Println(len(routine.regretsSum))
-			fmt.Println(i)
 		}
 	}
 	return routine.computeNashEquilibriumBasedOnStrategySum()
-
 }
 
 func (routine *CfrComputingRoutine) updateSigma(infSet InformationSet) {
