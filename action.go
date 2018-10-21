@@ -1,6 +1,6 @@
 package gopoker
 
-type ActionName byte
+type ActionName [3]bool
 
 type Action interface {
 	Name() ActionName

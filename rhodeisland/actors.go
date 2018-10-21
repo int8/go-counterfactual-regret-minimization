@@ -70,7 +70,7 @@ func (player *Player) EvaluateHand(table *Table) []int8 {
 		straight = 1
 	}
 
-	ownCard = int8((*player).Card.Name)
+	ownCard = CardNameInt((*player).Card.Name)
 
 	return []int8{straight * flush, three, straight, flush, pair, ownCard}
 }

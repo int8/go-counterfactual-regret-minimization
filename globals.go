@@ -6,30 +6,29 @@ const (
 	ChanceId         = 0
 )
 
-const NoCardSuit CardSuit = 0
-const (
-	Hearts   CardSuit = 1 + iota // ♥
-	Diamonds                     // ♦
-	Spades                       // ♠
-	Clubs                        // ♣
+var (
+	NoCardSuit CardSuit = to3BinArray(0) // no card
+	Hearts     CardSuit = to3BinArray(1) // ♥
+	Diamonds            = to3BinArray(2) // ♦
+	Spades              = to3BinArray(3) // ♠
+	Clubs               = to3BinArray(4) // ♣
 )
 
-const NoCardName CardName = 0
-
-const (
-	C2 CardName = 2 + iota
-	C3
-	C4
-	C5
-	C6
-	C7
-	C8
-	C9
-	C10
-	Jack
-	Queen
-	King
-	Ace
+var (
+	NoCardName CardName = to4BinArray(0) // no card
+	C2         CardName = to4BinArray(1)
+	C3         CardName = to4BinArray(2)
+	C4         CardName = to4BinArray(3)
+	C5         CardName = to4BinArray(4)
+	C6         CardName = to4BinArray(5)
+	C7         CardName = to4BinArray(6)
+	C8         CardName = to4BinArray(7)
+	C9         CardName = to4BinArray(8)
+	C10        CardName = to4BinArray(9)
+	Jack       CardName = to4BinArray(10)
+	Queen      CardName = to4BinArray(11)
+	King       CardName = to4BinArray(12)
+	Ace        CardName = to4BinArray(13)
 )
 
 const (
@@ -41,17 +40,15 @@ const (
 	End
 )
 
-const (
-	DealPublicCards = 1 + iota
-	DealPrivateCards
-	Fold
-	Check
-	Bet
-	Call
-	Raise
+var (
+	DealPublicCards  ActionName = to3BinArray(0)
+	DealPrivateCards ActionName = to3BinArray(1)
+	Fold             ActionName = to3BinArray(2)
+	Check            ActionName = to3BinArray(3)
+	Bet              ActionName = to3BinArray(4)
+	Call             ActionName = to3BinArray(5)
+	Raise            ActionName = to3BinArray(6)
 )
-
-const InformationSetSize int = 32
 
 var C2Hearts = Card{C2, Hearts}
 var C3Hearts = Card{C3, Hearts}
