@@ -89,6 +89,7 @@ type LimitedDeck struct {
 }
 
 func CreateLimitedDeck(minCardName CardName, shuffleInitially bool) *LimitedDeck {
+
 	deck := *new(LimitedDeck)
 	deck.Cards = make(map[*Card]bool, 20)
 	for _, card := range allCards {

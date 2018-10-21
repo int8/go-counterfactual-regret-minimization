@@ -11,3 +11,10 @@ type GameState interface {
 	CurrentActor() Actor
 	Evaluate() float32
 }
+
+func DistanceToRoot(state GameState) int {
+	if state.Parent() == nil {
+		return 0
+	}
+	return 1 + DistanceToRoot(state.Parent())
+}

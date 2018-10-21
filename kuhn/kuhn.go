@@ -87,7 +87,6 @@ func (state *KuhnGameState) InformationSet() InformationSet {
 		privateCardName[0], privateCardName[1], privateCardName[2], privateCardName[3],
 		privateCardSuit[0], privateCardSuit[1], privateCardSuit[2],
 	}
-
 	currentState := state
 	for i := 7; currentState.round != Start; i += 3 {
 		actionName := currentState.causingAction.Name()

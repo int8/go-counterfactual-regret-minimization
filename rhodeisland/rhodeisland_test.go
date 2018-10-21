@@ -544,7 +544,6 @@ func TestGamePlayInformationSetForBAfterCheckBetRaise(t *testing.T) {
 
 	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
 }
-
 func testGamePlayAfterEveryAction(node *RIGameState, actionsTests []ActionTestsTriple, t *testing.T) {
 	nodes := []GameState{node}
 	for i := range actionsTests {

@@ -102,6 +102,7 @@ func (state *RIGameState) InformationSet() InformationSet {
 		turnCardSuit = state.table.Cards[1].Suit
 	}
 	//21 for cards (private + 2 public) +4 (Deal + Check + Bet + Call) * 3 [rounds] * 3 [bit size]
+
 	informationSet := [InformationSetSize]bool{
 		privateCardName[0], privateCardName[1], privateCardName[2], privateCardName[3],
 		privateCardSuit[0], privateCardSuit[1], privateCardSuit[2],
@@ -117,6 +118,7 @@ func (state *RIGameState) InformationSet() InformationSet {
 		informationSet[i] = actionName[0]
 		informationSet[i+1] = actionName[1]
 		informationSet[i+2] = actionName[2]
+
 		currentState = currentState.parent
 		if currentState == nil {
 			break
