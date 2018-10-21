@@ -15,15 +15,15 @@ type Deck interface {
 	RemainingCards() []*Card
 }
 
-// CardName - there is 1-10 + J Q K A = 14 cards + NoCardName identifier / 4 bits is enough
-type CardName [4]bool
+// CardSymbol - there is 1-10 + J Q K A = 14 cards + NoCardSymbol identifier / 4 bits is enough
+type CardSymbol [4]bool
 
 // CardSuit - there is 4 card suits + NoCardSuit identifier - 3 bits is ok
 type CardSuit [3]bool
 
 type Card struct {
-	Name CardName
-	Suit CardSuit
+	Symbol CardSymbol
+	Suit   CardSuit
 }
 
 type FullDeck struct {
@@ -88,12 +88,12 @@ type LimitedDeck struct {
 	Cards map[*Card]bool
 }
 
-func CreateLimitedDeck(minCardName CardName, shuffleInitially bool) *LimitedDeck {
+func CreateLimitedDeck(minCardSymbol CardSymbol, shuffleInitially bool) *LimitedDeck {
 
 	deck := *new(LimitedDeck)
 	deck.Cards = make(map[*Card]bool, 20)
 	for _, card := range allCards {
-		if cardNameCompare(card.Name, minCardName) >= 0 {
+		if cardNameCompare(card.Symbol, minCardSymbol) >= 0 {
 			deck.Cards[card] = true
 		}
 	}
@@ -130,7 +130,7 @@ func (d *LimitedDeck) Clone() Deck {
 }
 
 func (c Card) String() string {
-	return fmt.Sprintf("%v%v", c.Suit, c.Name)
+	return fmt.Sprintf("%v%v", c.Suit, c.Symbol)
 }
 
 func (s CardSuit) String() string {
@@ -147,7 +147,7 @@ func (s CardSuit) String() string {
 	return "? "
 }
 
-func (n CardName) String() string {
+func (n CardSymbol) String() string {
 	switch n {
 	case Jack:
 		return "J"
@@ -157,9 +157,9 @@ func (n CardName) String() string {
 		return "K"
 	case Ace:
 		return "A"
-	case NoCardName:
+	case NoCardSymbol:
 		return "?"
 	default:
-		return strconv.Itoa(int(CardNameInt(n)) + 1)
+		return strconv.Itoa(int(CardSymbolInt(n)) + 1)
 	}
 }

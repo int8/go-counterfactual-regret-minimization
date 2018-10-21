@@ -58,11 +58,11 @@ func (player *Player) EvaluateHand(table *Table) []int8 {
 		flush = 1
 	}
 
-	if ((*player).Card.Name == table.Cards[0].Name) && ((*player).Card.Name == table.Cards[1].Name) {
+	if ((*player).Card.Symbol == table.Cards[0].Symbol) && ((*player).Card.Symbol == table.Cards[1].Symbol) {
 		three = 1
 	}
 
-	if (((*player).Card.Name == table.Cards[0].Name) || ((*player).Card.Name == table.Cards[1].Name)) || table.Cards[0].Name == table.Cards[1].Name {
+	if (((*player).Card.Symbol == table.Cards[0].Symbol) || ((*player).Card.Symbol == table.Cards[1].Symbol)) || table.Cards[0].Symbol == table.Cards[1].Symbol {
 		pair = 1
 	}
 
@@ -70,7 +70,7 @@ func (player *Player) EvaluateHand(table *Table) []int8 {
 		straight = 1
 	}
 
-	ownCard = CardNameInt((*player).Card.Name)
+	ownCard = CardSymbolInt((*player).Card.Symbol)
 
 	return []int8{straight * flush, three, straight, flush, pair, ownCard}
 }

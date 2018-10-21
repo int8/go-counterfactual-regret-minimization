@@ -676,11 +676,11 @@ func lastInformationSet(informationSet [InformationSetSize]bool) func(state *RIG
 func createInformationSet(prvCard Card, flopCard Card, turnCard Card, actions []Action) [InformationSetSize]bool {
 
 	informationSet := [InformationSetSize]bool{
-		prvCard.Name[0], prvCard.Name[1], prvCard.Name[2], prvCard.Name[3],
+		prvCard.Symbol[0], prvCard.Symbol[1], prvCard.Symbol[2], prvCard.Symbol[3],
 		prvCard.Suit[0], prvCard.Suit[1], prvCard.Suit[2],
-		flopCard.Name[0], flopCard.Name[1], flopCard.Name[2], flopCard.Name[3],
+		flopCard.Symbol[0], flopCard.Symbol[1], flopCard.Symbol[2], flopCard.Symbol[3],
 		flopCard.Suit[0], flopCard.Suit[1], flopCard.Suit[2],
-		turnCard.Name[0], turnCard.Name[1], turnCard.Name[2], turnCard.Name[3],
+		turnCard.Symbol[0], turnCard.Symbol[1], turnCard.Symbol[2], turnCard.Symbol[3],
 		turnCard.Suit[0], turnCard.Suit[1], turnCard.Suit[2],
 	}
 

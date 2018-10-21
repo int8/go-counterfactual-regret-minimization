@@ -80,11 +80,11 @@ func (state *KuhnGameState) Evaluate() float32 {
 
 func (state *KuhnGameState) InformationSet() InformationSet {
 
-	privateCardName := state.actors[state.nextToMove].(*Player).Card.Name
+	privateCardSymbol := state.actors[state.nextToMove].(*Player).Card.Symbol
 	privateCardSuit := state.actors[state.nextToMove].(*Player).Card.Suit
 
 	informationSet := [InformationSetSize]bool{
-		privateCardName[0], privateCardName[1], privateCardName[2], privateCardName[3],
+		privateCardSymbol[0], privateCardSymbol[1], privateCardSymbol[2], privateCardSymbol[3],
 		privateCardSuit[0], privateCardSuit[1], privateCardSuit[2],
 	}
 	currentState := state

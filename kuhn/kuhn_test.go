@@ -408,7 +408,7 @@ func lastInformationSet(informationSet [InformationSetSize]bool) func(state *Kuh
 func createInformationSet(card Card, actions []Action) [InformationSetSize]bool {
 
 	informationSet := [InformationSetSize]bool{
-		card.Name[0], card.Name[1], card.Name[2], card.Name[3],
+		card.Symbol[0], card.Symbol[1], card.Symbol[2], card.Symbol[3],
 		card.Suit[0], card.Suit[1], card.Suit[2],
 	}
 	var currentAction Action

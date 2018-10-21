@@ -10,7 +10,7 @@ func to4BinArray(number int) [4]bool {
 	return [4]bool{number&1 > 0, number&2 > 0, number&4 > 0, number&8 > 0}
 }
 
-func cardNameCompare(name1 CardName, name2 CardName) int8 {
+func cardNameCompare(name1 CardSymbol, name2 CardSymbol) int8 {
 	for i := 3; i > -1; i-- {
 		if name1[i] != name2[i] {
 			if name1[i] {
@@ -22,7 +22,7 @@ func cardNameCompare(name1 CardName, name2 CardName) int8 {
 	return 0 // cards are equal
 }
 
-func CardNameInt(name1 CardName) int8 {
+func CardSymbolInt(name1 CardSymbol) int8 {
 	result := int8(0)
 	for i := 0; i < 4; i++ {
 		if name1[i] {

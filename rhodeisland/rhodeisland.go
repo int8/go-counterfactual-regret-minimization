@@ -71,10 +71,10 @@ func (state *RIGameState) Evaluate() float32 {
 			if currentActorHandValueVector[i] > currentActorOpponentHandValueVector[i] {
 				currentActor.UpdateStack(currentActor.Stack + state.table.Pot)
 				return float32(currentActor.GetId()) * state.table.Pot / 2
-			} else {
-				currentActorOpponent.UpdateStack(currentActorOpponent.Stack + state.table.Pot)
-				return float32(currentActorOpponent.GetId()) * state.table.Pot / 2
 			}
+			currentActorOpponent.UpdateStack(currentActorOpponent.Stack + state.table.Pot)
+			return float32(currentActorOpponent.GetId()) * state.table.Pot / 2
+
 		}
 		state.playerActor(currentActorOpponent.GetId()).UpdateStack(state.table.Pot / 2)
 		state.playerActor(state.CurrentActor().GetId()).UpdateStack(state.table.Pot / 2)
@@ -85,30 +85,30 @@ func (state *RIGameState) Evaluate() float32 {
 
 func (state *RIGameState) InformationSet() InformationSet {
 
-	privateCardName := state.playerActor(state.nextToMove).Card.Name
+	privateCardSymbol := state.playerActor(state.nextToMove).Card.Symbol
 	privateCardSuit := state.playerActor(state.nextToMove).Card.Suit
-	flopCardName := NoCardName
+	flopCardSymbol := NoCardSymbol
 	flopCardSuit := NoCardSuit
-	turnCardName := NoCardName
+	turnCardSymbol := NoCardSymbol
 	turnCardSuit := NoCardSuit
 
 	if len(state.table.Cards) > 0 {
-		flopCardName = state.table.Cards[0].Name
+		flopCardSymbol = state.table.Cards[0].Symbol
 		flopCardSuit = state.table.Cards[0].Suit
 	}
 
 	if len(state.table.Cards) > 1 {
-		turnCardName = state.table.Cards[1].Name
+		turnCardSymbol = state.table.Cards[1].Symbol
 		turnCardSuit = state.table.Cards[1].Suit
 	}
 	//21 for cards (private + 2 public) +4 (Deal + Check + Bet + Call) * 3 [rounds] * 3 [bit size]
 
 	informationSet := [InformationSetSize]bool{
-		privateCardName[0], privateCardName[1], privateCardName[2], privateCardName[3],
+		privateCardSymbol[0], privateCardSymbol[1], privateCardSymbol[2], privateCardSymbol[3],
 		privateCardSuit[0], privateCardSuit[1], privateCardSuit[2],
-		flopCardName[0], flopCardName[1], flopCardName[2], flopCardName[3],
+		flopCardSymbol[0], flopCardSymbol[1], flopCardSymbol[2], flopCardSymbol[3],
 		flopCardSuit[0], flopCardSuit[1], flopCardSuit[2],
-		turnCardName[0], turnCardName[1], turnCardName[2], turnCardName[3],
+		turnCardSymbol[0], turnCardSymbol[1], turnCardSymbol[2], turnCardSymbol[3],
 		turnCardSuit[0], turnCardSuit[1], turnCardSuit[2],
 	}
 
@@ -300,7 +300,7 @@ func (state *RIGameState) playerActions(player *Player) []Action {
 		}
 		return player.Actions
 	}
-	panic(errors.New("Code not reachable."))
+	panic(errors.New("code not reachable"))
 }
 
 func (state *RIGameState) playerActor(id ActorId) *Player {

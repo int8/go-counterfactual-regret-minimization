@@ -7,14 +7,14 @@ import (
 
 func PrettyPrintInformationSet(infSet InformationSet) string {
 	infSetArray := infSet.([InformationSetSize]bool)
-	prvCardName := CardName([4]bool{infSetArray[0], infSetArray[1], infSetArray[2], infSetArray[3]})
+	prvCardSymbol := CardSymbol([4]bool{infSetArray[0], infSetArray[1], infSetArray[2], infSetArray[3]})
 	prvCardColor := CardSuit([3]bool{infSetArray[4], infSetArray[5], infSetArray[6]})
-	flopCardName := CardName([4]bool{infSetArray[7], infSetArray[8], infSetArray[9], infSetArray[10]})
+	flopCardSymbol := CardSymbol([4]bool{infSetArray[7], infSetArray[8], infSetArray[9], infSetArray[10]})
 	flopCardColor := CardSuit([3]bool{infSetArray[11], infSetArray[12], infSetArray[13]})
-	turnCardName := CardName([4]bool{infSetArray[14], infSetArray[15], infSetArray[16], infSetArray[17]})
+	turnCardSymbol := CardSymbol([4]bool{infSetArray[14], infSetArray[15], infSetArray[16], infSetArray[17]})
 	turnCardColor := CardSuit([3]bool{infSetArray[18], infSetArray[19], infSetArray[20]})
 
-	cardsString := fmt.Sprintf("%v%v* %v%v%v%v", prvCardName, prvCardColor, flopCardName, flopCardColor, turnCardName, turnCardColor)
+	cardsString := fmt.Sprintf("%v%v* %v%v%v%v", prvCardSymbol, prvCardColor, flopCardSymbol, flopCardColor, turnCardSymbol, turnCardColor)
 
 	actionString := ""
 	for i := 21; ; i += 3 {
@@ -29,9 +29,9 @@ func PrettyPrintInformationSet(infSet InformationSet) string {
 }
 
 func cardsDiffersByTwo(cards []Card) bool {
-	maxCard, minCard := CardNameInt(C2), CardNameInt(Ace)
+	maxCard, minCard := CardSymbolInt(C2), CardSymbolInt(Ace)
 	for _, card := range cards {
-		cardInt := CardNameInt(card.Name)
+		cardInt := CardSymbolInt(card.Symbol)
 		if cardInt >= maxCard {
 			maxCard = cardInt
 		}

@@ -22,10 +22,10 @@ func TestKuhnPokerNashEquilibriumMatchesExpectedUtility(t *testing.T) {
 
 func TestRhodeISlandPokerNashEquilibrium(t *testing.T) {
 
-	rhodeisland.MaxRaises = 0
+	rhodeisland.MaxRaises = 3
 	root := createRootForRhodeIslandPokerTest(1000., 1000.)
 	routine := CfrComputingRoutine{root: root, regretsSum: StrategyMap{}, sigma: StrategyMap{}, sigmaSum: StrategyMap{}}
-	ne := routine.ComputeNashEquilibriumViaCFR(100000, true)
+	ne := routine.ComputeNashEquilibriumViaCFR(10000, true)
 	for infSet := range ne {
 		fmt.Fprintf(os.Stdout, "%v %v \n", rhodeisland.PrettyPrintInformationSet(infSet), ne[infSet])
 	}

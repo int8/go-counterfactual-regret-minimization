@@ -15,20 +15,20 @@ var (
 )
 
 var (
-	NoCardName CardName = to4BinArray(0) // no card
-	C2         CardName = to4BinArray(1)
-	C3         CardName = to4BinArray(2)
-	C4         CardName = to4BinArray(3)
-	C5         CardName = to4BinArray(4)
-	C6         CardName = to4BinArray(5)
-	C7         CardName = to4BinArray(6)
-	C8         CardName = to4BinArray(7)
-	C9         CardName = to4BinArray(8)
-	C10        CardName = to4BinArray(9)
-	Jack       CardName = to4BinArray(10)
-	Queen      CardName = to4BinArray(11)
-	King       CardName = to4BinArray(12)
-	Ace        CardName = to4BinArray(13)
+	NoCardSymbol CardSymbol = to4BinArray(0) // no card
+	C2           CardSymbol = to4BinArray(1)
+	C3           CardSymbol = to4BinArray(2)
+	C4           CardSymbol = to4BinArray(3)
+	C5           CardSymbol = to4BinArray(4)
+	C6           CardSymbol = to4BinArray(5)
+	C7           CardSymbol = to4BinArray(6)
+	C8           CardSymbol = to4BinArray(7)
+	C9           CardSymbol = to4BinArray(8)
+	C10          CardSymbol = to4BinArray(9)
+	Jack         CardSymbol = to4BinArray(10)
+	Queen        CardSymbol = to4BinArray(11)
+	King         CardSymbol = to4BinArray(12)
+	Ace          CardSymbol = to4BinArray(13)
 )
 
 const (
@@ -107,7 +107,7 @@ var (
 	QueenClubs = Card{Queen, Clubs}
 	KingClubs  = Card{King, Clubs}
 	AceClubs   = Card{Ace, Clubs}
-	NoCard     = Card{NoCardName, NoCardSuit}
+	NoCard     = Card{NoCardSymbol, NoCardSuit}
 )
 
 var allCards = []*Card{&C2Hearts, &C3Hearts, &C4Hearts, &C5Hearts, &C6Hearts, &C7Hearts, &C8Hearts,
