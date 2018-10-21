@@ -9,19 +9,19 @@ type Action interface {
 func (m ActionName) String() string {
 	switch m {
 	case Check:
-		return "Check"
+		return "Ch"
 	case Bet:
-		return "Bet"
+		return "B"
 	case Call:
-		return "Call"
+		return "C"
 	case Fold:
-		return "Fold"
+		return "F"
 	case Raise:
-		return "Raise"
+		return "R"
 	case DealPrivateCards:
-		return "DealPrivateCards"
+		return "DPrv"
 	case DealPublicCards:
-		return "DealPublicCards"
+		return "DPub"
 	}
-	return "Undefined"
+	return "?"
 }

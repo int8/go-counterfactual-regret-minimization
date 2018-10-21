@@ -1,6 +1,6 @@
 package gopoker
 
-type InformationSet [36 + 21]bool
+type InformationSet interface{}
 
 type GameState interface {
 	Parent() GameState
@@ -10,11 +10,4 @@ type GameState interface {
 	IsTerminal() bool
 	CurrentActor() Actor
 	Evaluate() float32
-}
-
-func DistanceToRoot(state GameState) int {
-	if state.Parent() == nil {
-		return 0
-	}
-	return 1 + DistanceToRoot(state.Parent())
 }

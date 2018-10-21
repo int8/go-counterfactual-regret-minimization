@@ -9,3 +9,4 @@ var FoldAction = PlayerAction{Fold}
 
 const BetSize float32 = 1.0
 const Ante float32 = 1.0
+const InformationSetSize = 19

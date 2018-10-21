@@ -83,17 +83,17 @@ func (state *KuhnGameState) InformationSet() InformationSet {
 	privateCardName := state.actors[state.nextToMove].(*Player).Card.Name
 	privateCardSuit := state.actors[state.nextToMove].(*Player).Card.Suit
 
-	informationSet := [21 + 36]bool{
+	informationSet := [InformationSetSize]bool{
 		privateCardName[0], privateCardName[1], privateCardName[2], privateCardName[3],
 		privateCardSuit[0], privateCardSuit[1], privateCardSuit[2],
 	}
-	// there is no more than 50 actions overall
+
 	currentState := state
 	for i := 7; currentState.round != Start; i += 3 {
 		actionName := currentState.causingAction.Name()
 		informationSet[i] = actionName[0]
 		informationSet[i+1] = actionName[1]
-		informationSet[i+1] = actionName[2]
+		informationSet[i+2] = actionName[2]
 		currentState = currentState.parent
 		if currentState == nil {
 			break

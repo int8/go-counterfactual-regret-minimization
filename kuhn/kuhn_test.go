@@ -272,31 +272,26 @@ func TestGamePlayEvaluationBWinsCheckCheck(t *testing.T) {
 
 }
 
-//
-//func TestGamePlayInformationSetForA_NoActions(t *testing.T) {
-//	hands := DealPrivateCardsAction{&QueenHearts, &KingHearts}
-//
-//	root := createRootForTest(100., 100.)
-//
-//	actions := []Action{hands}
-//	targetInformationSet := [InformationSetSize]byte{byte(QueenHearts.Name), byte(QueenHearts.Suit)}
-//	targetInformationSet[2] = byte(DealPrivateCards)
-//	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
-//}
-//
-//func TestGamePlayInformationSetForB_SingleCheck(t *testing.T) {
-//
-//	hands := DealPrivateCardsAction{&QueenHearts, &KingHearts}
-//	root := createRootForTest(100., 100.)
-//
-//	actions := []Action{hands, CheckAction}
-//
-//	targetInformationSet := [InformationSetSize]byte{byte(KingHearts.Name), byte(KingHearts.Suit)}
-//	targetInformationSet[2] = byte(Check)
-//	targetInformationSet[3] = byte(DealPrivateCards)
-//
-//	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
-//}
+func TestGamePlayInformationSetForA_NoActions(t *testing.T) {
+	hands := DealPrivateCardsAction{&QueenHearts, &KingHearts}
+
+	root := createRootForTest(100., 100.)
+
+	actions := []Action{hands}
+	targetInformationSet := createInformationSet(QueenHearts, actions)
+	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
+}
+
+func TestGamePlayInformationSetForB_SingleCheck(t *testing.T) {
+
+	hands := DealPrivateCardsAction{&QueenHearts, &KingHearts}
+	root := createRootForTest(100., 100.)
+
+	actions := []Action{hands, CheckAction}
+
+	targetInformationSet := createInformationSet(KingHearts, actions)
+	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
+}
 
 func testGamePlayAfterEveryAction(node *KuhnGameState, actionsTests []ActionTestsTriple, t *testing.T) {
 	nodes := []GameState{node}
@@ -403,10 +398,27 @@ func privateCards(playerACard Card, playerBCard Card) func(state *KuhnGameState)
 	}
 }
 
-//
-//func lastInformationSet(informationSet [InformationSetSize]byte) func(state *KuhnGameState) bool {
-//	return func(state *KuhnGameState) bool {
-//		currentInformationSet := state.InformationSet()
-//		return currentInformationSet == informationSet
-//	}
-//}
+func lastInformationSet(informationSet [InformationSetSize]bool) func(state *KuhnGameState) bool {
+	return func(state *KuhnGameState) bool {
+		currentInformationSet := state.InformationSet()
+		return currentInformationSet == informationSet
+	}
+}
+
+func createInformationSet(card Card, actions []Action) [InformationSetSize]bool {
+
+	informationSet := [InformationSetSize]bool{
+		card.Name[0], card.Name[1], card.Name[2], card.Name[3],
+		card.Suit[0], card.Suit[1], card.Suit[2],
+	}
+	var currentAction Action
+	for i := 7; len(actions) > 0; i += 3 {
+		// somehow tricky pop..
+		currentAction, actions = actions[len(actions)-1], actions[:len(actions)-1]
+		informationSet[i] = currentAction.Name()[0]
+		informationSet[i+1] = currentAction.Name()[1]
+		informationSet[i+2] = currentAction.Name()[2]
+	}
+
+	return informationSet
+}

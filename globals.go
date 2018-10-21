@@ -41,70 +41,74 @@ const (
 )
 
 var (
-	DealPublicCards  ActionName = to3BinArray(0)
-	DealPrivateCards ActionName = to3BinArray(1)
-	Fold             ActionName = to3BinArray(2)
-	Check            ActionName = to3BinArray(3)
-	Bet              ActionName = to3BinArray(4)
-	Call             ActionName = to3BinArray(5)
-	Raise            ActionName = to3BinArray(6)
+	NoAction         ActionName = to3BinArray(0)
+	DealPublicCards  ActionName = to3BinArray(1)
+	DealPrivateCards ActionName = to3BinArray(2)
+	Fold             ActionName = to3BinArray(3)
+	Check            ActionName = to3BinArray(4)
+	Bet              ActionName = to3BinArray(5)
+	Call             ActionName = to3BinArray(6)
+	Raise            ActionName = to3BinArray(7)
 )
 
-var C2Hearts = Card{C2, Hearts}
-var C3Hearts = Card{C3, Hearts}
-var C4Hearts = Card{C4, Hearts}
-var C5Hearts = Card{C5, Hearts}
-var C6Hearts = Card{C6, Hearts}
-var C7Hearts = Card{C7, Hearts}
-var C8Hearts = Card{C8, Hearts}
-var C9Hearts = Card{C9, Hearts}
-var C10Hearts = Card{C10, Hearts}
-var JackHearts = Card{Jack, Hearts}
-var QueenHearts = Card{Queen, Hearts}
-var KingHearts = Card{King, Hearts}
-var AceHearts = Card{Ace, Hearts}
+var (
+	C2Hearts    = Card{C2, Hearts}
+	C3Hearts    = Card{C3, Hearts}
+	C4Hearts    = Card{C4, Hearts}
+	C5Hearts    = Card{C5, Hearts}
+	C6Hearts    = Card{C6, Hearts}
+	C7Hearts    = Card{C7, Hearts}
+	C8Hearts    = Card{C8, Hearts}
+	C9Hearts    = Card{C9, Hearts}
+	C10Hearts   = Card{C10, Hearts}
+	JackHearts  = Card{Jack, Hearts}
+	QueenHearts = Card{Queen, Hearts}
+	KingHearts  = Card{King, Hearts}
+	AceHearts   = Card{Ace, Hearts}
 
-var C2Spades = Card{C2, Spades}
-var C3Spades = Card{C3, Spades}
-var C4Spades = Card{C4, Spades}
-var C5Spades = Card{C5, Spades}
-var C6Spades = Card{C6, Spades}
-var C7Spades = Card{C7, Spades}
-var C8Spades = Card{C8, Spades}
-var C9Spades = Card{C9, Spades}
-var C10Spades = Card{C10, Spades}
-var JackSpades = Card{Jack, Spades}
-var QueenSpades = Card{Queen, Spades}
-var KingSpades = Card{King, Spades}
-var AceSpades = Card{Ace, Spades}
+	C2Spades    = Card{C2, Spades}
+	C3Spades    = Card{C3, Spades}
+	C4Spades    = Card{C4, Spades}
+	C5Spades    = Card{C5, Spades}
+	C6Spades    = Card{C6, Spades}
+	C7Spades    = Card{C7, Spades}
+	C8Spades    = Card{C8, Spades}
+	C9Spades    = Card{C9, Spades}
+	C10Spades   = Card{C10, Spades}
+	JackSpades  = Card{Jack, Spades}
+	QueenSpades = Card{Queen, Spades}
+	KingSpades  = Card{King, Spades}
+	AceSpades   = Card{Ace, Spades}
 
-var C2Diamonds = Card{C2, Diamonds}
-var C3Diamonds = Card{C3, Diamonds}
-var C4Diamonds = Card{C4, Diamonds}
-var C5Diamonds = Card{C5, Diamonds}
-var C6Diamonds = Card{C6, Diamonds}
-var C7Diamonds = Card{C7, Diamonds}
-var C8Diamonds = Card{C8, Diamonds}
-var C9Diamonds = Card{C9, Diamonds}
-var C10Diamonds = Card{C10, Diamonds}
-var JackDiamonds = Card{Jack, Diamonds}
-var QueenDiamonds = Card{Queen, Diamonds}
-var KingDiamonds = Card{King, Diamonds}
-var AceDiamonds = Card{Ace, Diamonds}
+	C2Diamonds    = Card{C2, Diamonds}
+	C3Diamonds    = Card{C3, Diamonds}
+	C4Diamonds    = Card{C4, Diamonds}
+	C5Diamonds    = Card{C5, Diamonds}
+	C6Diamonds    = Card{C6, Diamonds}
+	C7Diamonds    = Card{C7, Diamonds}
+	C8Diamonds    = Card{C8, Diamonds}
+	C9Diamonds    = Card{C9, Diamonds}
+	C10Diamonds   = Card{C10, Diamonds}
+	JackDiamonds  = Card{Jack, Diamonds}
+	QueenDiamonds = Card{Queen, Diamonds}
+	KingDiamonds  = Card{King, Diamonds}
+	AceDiamonds   = Card{Ace, Diamonds}
 
-var C2Clubs = Card{C2, Clubs}
-var C3Clubs = Card{C3, Clubs}
-var C4Clubs = Card{C4, Clubs}
-var C5Clubs = Card{C5, Clubs}
-var C6Clubs = Card{C6, Clubs}
-var C7Clubs = Card{C7, Clubs}
-var C8Clubs = Card{C8, Clubs}
-var C9Clubs = Card{C9, Clubs}
-var C10Clubs = Card{C10, Clubs}
-var JackClubs = Card{Jack, Clubs}
-var QueenClubs = Card{Queen, Clubs}
-var KingClubs = Card{King, Clubs}
-var AceClubs = Card{Ace, Clubs}
+	C2Clubs    = Card{C2, Clubs}
+	C3Clubs    = Card{C3, Clubs}
+	C4Clubs    = Card{C4, Clubs}
+	C5Clubs    = Card{C5, Clubs}
+	C6Clubs    = Card{C6, Clubs}
+	C7Clubs    = Card{C7, Clubs}
+	C8Clubs    = Card{C8, Clubs}
+	C9Clubs    = Card{C9, Clubs}
+	C10Clubs   = Card{C10, Clubs}
+	JackClubs  = Card{Jack, Clubs}
+	QueenClubs = Card{Queen, Clubs}
+	KingClubs  = Card{King, Clubs}
+	AceClubs   = Card{Ace, Clubs}
+	NoCard     = Card{NoCardName, NoCardSuit}
+)
 
 var allCards = []*Card{&C2Hearts, &C3Hearts, &C4Hearts, &C5Hearts, &C6Hearts, &C7Hearts, &C8Hearts,
 	&C9Hearts, &C10Hearts, &JackHearts, &QueenHearts, &KingHearts, &AceHearts,

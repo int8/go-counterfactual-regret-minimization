@@ -11,7 +11,7 @@ func to4BinArray(number int) [4]bool {
 }
 
 func cardNameCompare(name1 CardName, name2 CardName) int8 {
-	for i := 3; i != 0; i-- {
+	for i := 3; i > -1; i-- {
 		if name1[i] != name2[i] {
 			if name1[i] {
 				return 1 // card 1 is higher

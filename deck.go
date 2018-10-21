@@ -89,16 +89,14 @@ type LimitedDeck struct {
 }
 
 func CreateLimitedDeck(minCardName CardName, shuffleInitially bool) *LimitedDeck {
-
 	deck := *new(LimitedDeck)
 	deck.Cards = make(map[*Card]bool, 20)
 	for _, card := range allCards {
-		if cardNameCompare(card.Name, minCardName) > 0 {
+		if cardNameCompare(card.Name, minCardName) >= 0 {
 			deck.Cards[card] = true
 		}
 	}
 	deck.Shuffle()
-
 	return &deck
 }
 
@@ -145,7 +143,7 @@ func (s CardSuit) String() string {
 	case Clubs:
 		return "♣"
 	}
-	return "?"
+	return "? "
 }
 
 func (n CardName) String() string {
@@ -158,7 +156,9 @@ func (n CardName) String() string {
 		return "K"
 	case Ace:
 		return "A"
+	case NoCardName:
+		return "?"
 	default:
-		return strconv.Itoa(int(CardNameInt(n)))
+		return strconv.Itoa(int(CardNameInt(n)) + 1)
 	}
 }

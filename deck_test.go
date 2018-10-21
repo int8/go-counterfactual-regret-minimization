@@ -25,6 +25,18 @@ func TestFullDeckCardsCount(t *testing.T) {
 
 }
 
+func TestLimitedDeckCardsCount(t *testing.T) {
+	deck := CreateLimitedDeck(C10, true)
+
+	if len(deck.Cards) != 20 {
+		t.Error("Limited deck starting from 10 should count 20 cards")
+	}
+
+	if deck.CardsLeft() != 20 {
+		t.Errorf("Limited deck starting from 10 should have 20 cards left after initialization but have %v", deck.CardsLeft())
+	}
+}
+
 // TODO: DealNextRandomCard is not used
 func TestIfAllCardsAreDealt(t *testing.T) {
 	fullDeck := CreateFullDeck(true)
