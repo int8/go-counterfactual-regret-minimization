@@ -478,114 +478,72 @@ func TestGamePlayEvaluationBFoldsPreFlopManyRaises(t *testing.T) {
 	testGamePlayAfterAllActions(root, actions, gameResult(singlePlayerPotContribution), t)
 }
 
-//
-//func TestGamePlayInformationSetForAAfterRaises(t *testing.T) {
-//	hands := DealPrivateCardsAction{&C10Hearts, &KingClubs}
-//	root := createRootForTest(100., 100.)
-//	actions := []Action{hands, CheckAction, BetAction, RaiseAction, RaiseAction}
-//
-//	targetInformationSet := [InformationSetSize]byte{byte(C10Hearts.Name), byte(C10Hearts.Suit)}
-//	targetInformationSet[6] = byte(Raise)
-//	targetInformationSet[7] = byte(Raise)
-//	targetInformationSet[8] = byte(Bet)
-//	targetInformationSet[9] = byte(Check)
-//	targetInformationSet[10] = byte(DealPrivateCards)
-//
-//	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
-//}
-//
-//func TestGamePlayInformationSetForB_ChecksOnly(t *testing.T) {
-//
-//	hands := DealPrivateCardsAction{&C10Hearts, &KingClubs}
-//	flop := DealPublicCardAction{&KingDiamonds}
-//	turn := DealPublicCardAction{&KingSpades}
-//	root := createRootForTest(100., 100.)
-//
-//	actions := []Action{hands, CheckAction, CheckAction, flop, CheckAction, CheckAction, turn, CheckAction}
-//	targetInformationSet := [InformationSetSize]byte{byte(KingClubs.Name), byte(KingClubs.Suit), byte(KingDiamonds.Name),
-//		byte(KingDiamonds.Suit), byte(KingSpades.Name), byte(KingSpades.Suit)}
-//	targetInformationSet[6] = byte(Check)
-//	targetInformationSet[7] = byte(DealPublicCards)
-//	targetInformationSet[8] = byte(Check)
-//	targetInformationSet[9] = byte(Check)
-//	targetInformationSet[10] = byte(DealPublicCards)
-//	targetInformationSet[11] = byte(Check)
-//	targetInformationSet[12] = byte(Check)
-//	targetInformationSet[13] = byte(DealPrivateCards)
-//
-//	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
-//}
-//
-//func TestGamePlayInformationSetForA_NoActions(t *testing.T) {
-//	hands := DealPrivateCardsAction{&C10Hearts, &KingClubs}
-//
-//	root := createRootForTest(100., 100.)
-//
-//	actions := []Action{hands}
-//	targetInformationSet := [InformationSetSize]byte{byte(C10Hearts.Name), byte(C10Hearts.Suit)}
-//	targetInformationSet[6] = byte(hands.Name())
-//
-//	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
-//}
-//
-//func TestGamePlayInformationSetForB_SingleCheck(t *testing.T) {
-//
-//	hands := DealPrivateCardsAction{&C10Hearts, &AceSpades}
-//	root := createRootForTest(100., 100.)
-//
-//	actions := []Action{hands, CheckAction}
-//
-//	targetInformationSet := [InformationSetSize]byte{byte(AceSpades.Name), byte(AceSpades.Suit)}
-//	targetInformationSet[6] = byte(Check)
-//	targetInformationSet[7] = byte(DealPrivateCards)
-//
-//	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
-//}
-//
-//func TestGamePlayInformationSetForB_BetCallAndChecksOnly(t *testing.T) {
-//
-//	hands := DealPrivateCardsAction{&C10Hearts, &KingClubs}
-//	flop := DealPublicCardAction{&KingDiamonds}
-//	turn := DealPublicCardAction{&KingSpades}
-//	root := createRootForTest(100., 100.)
-//
-//	actions := []Action{hands, CheckAction, BetAction, CallAction, flop, CheckAction, CheckAction, turn, CheckAction}
-//
-//	targetInformationSet := [InformationSetSize]byte{byte(KingClubs.Name), byte(KingClubs.Suit), byte(KingDiamonds.Name),
-//		byte(KingDiamonds.Suit), byte(KingSpades.Name), byte(KingSpades.Suit)}
-//	targetInformationSet[6] = byte(Check)
-//	targetInformationSet[7] = byte(DealPublicCards)
-//	targetInformationSet[8] = byte(Check)
-//	targetInformationSet[9] = byte(Check)
-//	targetInformationSet[10] = byte(DealPublicCards)
-//	targetInformationSet[11] = byte(Call)
-//	targetInformationSet[12] = byte(Bet)
-//	targetInformationSet[13] = byte(Check)
-//	targetInformationSet[14] = byte(DealPrivateCards)
-//
-//	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
-//}
-//
-//func TestGamePlayInformationSetForBAfterCheckBetRaise(t *testing.T) {
-//
-//	hands := DealPrivateCardsAction{&C10Hearts, &QueenClubs}
-//	root := createRootForTest(100., 100.)
-//
-//	actions := []Action{hands, CheckAction, BetAction, RaiseAction}
-//	targetInformationSet := [InformationSetSize]byte{byte(QueenClubs.Name), byte(QueenClubs.Suit)}
-//	targetInformationSet[6] = byte(Raise)
-//	targetInformationSet[7] = byte(Bet)
-//	targetInformationSet[8] = byte(Check)
-//	targetInformationSet[9] = byte(DealPrivateCards)
-//
-//	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
-//}
+func TestGamePlayInformationSetForAAfterRaises(t *testing.T) {
+	hands := DealPrivateCardsAction{&C10Hearts, &KingClubs}
+	root := createRootForTest(100., 100.)
+	actions := []Action{hands, CheckAction, BetAction, RaiseAction, RaiseAction}
 
-//func TestChanceSamplingUtilityTerminates(t *testing.T) {
-//	root := createRootForTest(1000., 1000.)
-//	routine := CfrComputingRoutine{root: root, regretsSum: StrategyMap{}, sigma: StrategyMap{}, sigmaSum: StrategyMap{}}
-//	routine.ComputeNashEquilibriumViaCFR(100)
-//}
+	targetInformationSet := createInformationSet(C10Hearts, NoCard, NoCard, actions)
+	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
+}
+
+func TestGamePlayInformationSetForB_ChecksOnly(t *testing.T) {
+
+	hands := DealPrivateCardsAction{&C10Hearts, &KingClubs}
+	flop := DealPublicCardAction{&KingDiamonds}
+	turn := DealPublicCardAction{&KingSpades}
+	root := createRootForTest(100., 100.)
+
+	actions := []Action{hands, CheckAction, CheckAction, flop, CheckAction, CheckAction, turn, CheckAction}
+	targetInformationSet := createInformationSet(KingClubs, KingDiamonds, KingSpades, actions)
+	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
+}
+
+func TestGamePlayInformationSetForA_NoActions(t *testing.T) {
+	hands := DealPrivateCardsAction{&C10Hearts, &KingClubs}
+
+	root := createRootForTest(100., 100.)
+
+	actions := []Action{hands}
+	targetInformationSet := createInformationSet(C10Hearts, NoCard, NoCard, actions)
+
+	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
+}
+
+func TestGamePlayInformationSetForB_SingleCheck(t *testing.T) {
+
+	hands := DealPrivateCardsAction{&C10Hearts, &AceSpades}
+	root := createRootForTest(100., 100.)
+
+	actions := []Action{hands, CheckAction}
+	targetInformationSet := createInformationSet(AceSpades, NoCard, NoCard, actions)
+
+	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
+}
+
+func TestGamePlayInformationSetForB_BetCallAndChecksOnly(t *testing.T) {
+
+	hands := DealPrivateCardsAction{&C10Hearts, &KingClubs}
+	flop := DealPublicCardAction{&KingDiamonds}
+	turn := DealPublicCardAction{&KingSpades}
+	root := createRootForTest(100., 100.)
+
+	actions := []Action{hands, CheckAction, BetAction, CallAction, flop, CheckAction, CheckAction, turn, CheckAction}
+	targetInformationSet := createInformationSet(KingClubs, KingDiamonds, KingSpades, actions)
+
+	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
+}
+
+func TestGamePlayInformationSetForBAfterCheckBetRaise(t *testing.T) {
+
+	hands := DealPrivateCardsAction{&C10Hearts, &QueenClubs}
+	root := createRootForTest(100., 100.)
+
+	actions := []Action{hands, CheckAction, BetAction, RaiseAction}
+	targetInformationSet := createInformationSet(QueenClubs, NoCard, NoCard, actions)
+
+	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
+}
 
 func testGamePlayAfterEveryAction(node *RIGameState, actionsTests []ActionTestsTriple, t *testing.T) {
 	nodes := []GameState{node}
@@ -709,10 +667,32 @@ func turnCard(publicTurnCard Card) func(state *RIGameState) bool {
 	}
 }
 
-//
-//func lastInformationSet(informationSet [InformationSetSize]byte) func(state *RIGameState) bool {
-//	return func(state *RIGameState) bool {
-//		currentInformationSet := state.InformationSet()
-//		return currentInformationSet == informationSet
-//	}
-//}
+func lastInformationSet(informationSet [InformationSetSize]bool) func(state *RIGameState) bool {
+	return func(state *RIGameState) bool {
+		currentInformationSet := state.InformationSet()
+		return currentInformationSet == informationSet
+	}
+}
+
+func createInformationSet(prvCard Card, flopCard Card, turnCard Card, actions []Action) [InformationSetSize]bool {
+
+	informationSet := [InformationSetSize]bool{
+		prvCard.Name[0], prvCard.Name[1], prvCard.Name[2], prvCard.Name[3],
+		prvCard.Suit[0], prvCard.Suit[1], prvCard.Suit[2],
+		flopCard.Name[0], flopCard.Name[1], flopCard.Name[2], flopCard.Name[3],
+		flopCard.Suit[0], flopCard.Suit[1], flopCard.Suit[2],
+		turnCard.Name[0], turnCard.Name[1], turnCard.Name[2], turnCard.Name[3],
+		turnCard.Suit[0], turnCard.Suit[1], turnCard.Suit[2],
+	}
+
+	var currentAction Action
+	for i := 21; len(actions) > 0; i += 3 {
+		// somehow tricky pop..
+		currentAction, actions = actions[len(actions)-1], actions[:len(actions)-1]
+		informationSet[i] = currentAction.Name()[0]
+		informationSet[i+1] = currentAction.Name()[1]
+		informationSet[i+2] = currentAction.Name()[2]
+	}
+
+	return informationSet
+}
