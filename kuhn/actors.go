@@ -6,22 +6,22 @@ import (
 )
 
 type Chance struct {
-	id   ActorId
+	id   ActorID
 	deck Deck
 }
 
-func (chance *Chance) GetId() ActorId {
+func (chance *Chance) GetID() ActorID {
 	return chance.id
 }
 
 type Player struct {
-	Id      ActorId
+	Id      ActorID
 	Card    *Card
 	Stack   float32
 	Actions []Action
 }
 
-func (player *Player) GetId() ActorId {
+func (player *Player) GetID() ActorID {
 	return player.Id
 }
 
@@ -37,7 +37,7 @@ func (player *Player) Clone() *Player {
 	return &Player{Card: player.Card, Id: player.Id, Stack: player.Stack, Actions: nil}
 }
 
-func (player *Player) Opponent() ActorId {
+func (player *Player) Opponent() ActorID {
 	return -player.Id
 }
 
@@ -51,7 +51,7 @@ func (player *Player) PlaceBet(table *Table, betSize float32) {
 }
 
 func (player *Player) EvaluateHand(table *Table) int8 {
-	return CardSymbolInt((*player).Card.Symbol)
+	return CardSymbol2Int((*player).Card.Symbol)
 }
 
 func (player *Player) String() string {

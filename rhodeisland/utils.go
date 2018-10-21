@@ -29,9 +29,9 @@ func PrettyPrintInformationSet(infSet InformationSet) string {
 }
 
 func cardsDiffersByTwo(cards []Card) bool {
-	maxCard, minCard := CardSymbolInt(C2), CardSymbolInt(Ace)
+	maxCard, minCard := CardSymbol2Int(C2), CardSymbol2Int(Ace)
 	for _, card := range cards {
-		cardInt := CardSymbolInt(card.Symbol)
+		cardInt := CardSymbol2Int(card.Symbol)
 		if cardInt >= maxCard {
 			maxCard = cardInt
 		}
@@ -52,8 +52,8 @@ func actionInSlice(a Action, actions []Action) bool {
 	return false
 }
 
-func cloneActorsMap(srcActors map[ActorId]Actor) map[ActorId]Actor {
-	actors := make(map[ActorId]Actor)
+func cloneActorsMap(srcActors map[ActorID]Actor) map[ActorID]Actor {
+	actors := make(map[ActorID]Actor)
 	for id, actor := range srcActors {
 		switch actor.(type) {
 		case *Player:

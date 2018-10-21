@@ -32,14 +32,14 @@ type FullDeck struct {
 
 func CreateFullDeck(shuffleInitially bool) *FullDeck {
 
-	fullDeck := *new(FullDeck)
-	fullDeck.Cards = make(map[*Card]bool, 52)
+	deck := *new(FullDeck)
+	deck.Cards = make(map[*Card]bool, 52)
 	for _, card := range allCards {
-		fullDeck.Cards[card] = true
+		deck.Cards[card] = true
 	}
-	fullDeck.Shuffle()
+	deck.Shuffle()
 
-	return &fullDeck
+	return &deck
 }
 
 func (d *FullDeck) Shuffle() {
@@ -160,6 +160,6 @@ func (n CardSymbol) String() string {
 	case NoCardSymbol:
 		return "?"
 	default:
-		return strconv.Itoa(int(CardSymbolInt(n)) + 1)
+		return strconv.Itoa(int(CardSymbol2Int(n)) + 1)
 	}
 }

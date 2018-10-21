@@ -11,8 +11,8 @@ func actionInSlice(a Action, actions []Action) bool {
 	return false
 }
 
-func cloneActorsMap(srcActors map[ActorId]Actor) map[ActorId]Actor {
-	actors := make(map[ActorId]Actor)
+func cloneActorsMap(srcActors map[ActorID]Actor) map[ActorID]Actor {
+	actors := make(map[ActorID]Actor)
 	for id, actor := range srcActors {
 		switch actor.(type) {
 		case *Player:

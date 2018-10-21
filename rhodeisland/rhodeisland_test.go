@@ -605,13 +605,13 @@ func noRaiseAvailable() func(state *RIGameState) bool {
 	}
 }
 
-func actorToMove(actorId ActorId) func(state *RIGameState) bool {
+func actorToMove(actorId ActorID) func(state *RIGameState) bool {
 	return func(state *RIGameState) bool {
 		return state.nextToMove == actorId
 	}
 }
 
-func stackEqualsTo(player ActorId, stack float32) func(state *RIGameState) bool {
+func stackEqualsTo(player ActorID, stack float32) func(state *RIGameState) bool {
 	return func(state *RIGameState) bool {
 		return math.Abs(float64(state.actors[player].(*Player).Stack-stack)) < 1e-9
 	}

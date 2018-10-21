@@ -11,8 +11,8 @@ type KuhnGameState struct {
 	parent        *KuhnGameState
 	causingAction Action
 	table         *Table
-	actors        map[ActorId]Actor
-	nextToMove    ActorId
+	actors        map[ActorID]Actor
+	nextToMove    ActorID
 	terminal      bool
 }
 
@@ -55,22 +55,22 @@ func (state *KuhnGameState) CurrentActor() Actor {
 
 //TODO: test it carefully
 func (state *KuhnGameState) Evaluate() float32 {
-	currentActor := state.playerActor(state.CurrentActor().GetId())
-	currentActorOpponent := state.playerActor(-state.CurrentActor().GetId())
+	currentActor := state.playerActor(state.CurrentActor().GetID())
+	currentActorOpponent := state.playerActor(-state.CurrentActor().GetID())
 	if state.IsTerminal() {
 		if state.causingAction.Name() == Fold {
 			currentActor.UpdateStack(currentActor.Stack + state.table.Pot)
-			return float32(currentActor.GetId()) * (state.table.Pot / 2)
+			return float32(currentActor.GetID()) * (state.table.Pot / 2)
 		}
 		currentActorHandValue := currentActor.EvaluateHand(state.table)
 		currentActorOpponentHandValue := currentActorOpponent.EvaluateHand(state.table)
 
 		if currentActorHandValue > currentActorOpponentHandValue {
 			currentActor.UpdateStack(currentActor.Stack + state.table.Pot)
-			return float32(currentActor.GetId()) * (state.table.Pot / 2)
+			return float32(currentActor.GetID()) * (state.table.Pot / 2)
 		} else {
 			currentActorOpponent.UpdateStack(currentActorOpponent.Stack + state.table.Pot)
-			return float32(currentActorOpponent.GetId()) * (state.table.Pot / 2)
+			return float32(currentActorOpponent.GetID()) * (state.table.Pot / 2)
 		}
 	}
 	currentActor.UpdateStack(currentActor.Stack + state.table.Pot/2)
@@ -101,7 +101,7 @@ func (state *KuhnGameState) InformationSet() InformationSet {
 	return InformationSet(informationSet)
 }
 
-func (state *KuhnGameState) stack(actor ActorId) float32 {
+func (state *KuhnGameState) stack(actor ActorID) float32 {
 	return state.actors[actor].(*Player).Stack
 }
 
@@ -124,7 +124,7 @@ func (state *KuhnGameState) actAsPlayer(action Action) GameState {
 
 	defer func() {
 		if action.Name() == Call || action.Name() == Bet {
-			child.playerActor(actor.GetId()).PlaceBet(child.table, BetSize)
+			child.playerActor(actor.GetID()).PlaceBet(child.table, BetSize)
 		}
 		if action.Name() == Fold {
 			//opponent of folding player can now take his bet back
@@ -148,14 +148,14 @@ func (state *KuhnGameState) betSize() float32 {
 func Root(playerA *Player, playerB *Player) *KuhnGameState {
 	chance := &Chance{id: ChanceId, deck: CreateKuhnDeck(true)}
 
-	actors := map[ActorId]Actor{PlayerA: playerA, PlayerB: playerB, ChanceId: chance}
+	actors := map[ActorID]Actor{PlayerA: playerA, PlayerB: playerB, ChanceId: chance}
 	table := &Table{Pot: 0, Cards: []Card{}}
 
 	return &KuhnGameState{round: Start, table: table,
 		actors: actors, nextToMove: ChanceId, causingAction: nil}
 }
 
-func createChild(blueprint *KuhnGameState, round Round, Action Action, nextToMove ActorId, terminal bool) *KuhnGameState {
+func createChild(blueprint *KuhnGameState, round Round, Action Action, nextToMove ActorID, terminal bool) *KuhnGameState {
 	child := KuhnGameState{round: round,
 		parent: blueprint, causingAction: Action, terminal: terminal,
 		table: blueprint.table.Clone(), actors: cloneActorsMap(blueprint.actors), nextToMove: nextToMove}
@@ -239,6 +239,6 @@ func (state *KuhnGameState) playerActions(player *Player) []Action {
 	panic(errors.New("Code not reachable."))
 }
 
-func (state *KuhnGameState) playerActor(id ActorId) *Player {
+func (state *KuhnGameState) playerActor(id ActorID) *Player {
 	return state.actors[id].(*Player)
 }

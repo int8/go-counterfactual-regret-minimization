@@ -1,7 +1,7 @@
 package gopoker
 
-type ActorId int8
+type ActorID int8
 
 type Actor interface {
-	GetId() ActorId
+	GetID() ActorID
 }

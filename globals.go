@@ -1,7 +1,7 @@
 package gopoker
 
 const (
-	PlayerA  ActorId = 1
+	PlayerA  ActorID = 1
 	PlayerB          = -PlayerA
 	ChanceId         = 0
 )

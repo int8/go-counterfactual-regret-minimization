@@ -22,7 +22,7 @@ func cardNameCompare(name1 CardSymbol, name2 CardSymbol) int8 {
 	return 0 // cards are equal
 }
 
-func CardSymbolInt(name1 CardSymbol) int8 {
+func CardSymbol2Int(name1 CardSymbol) int8 {
 	result := int8(0)
 	for i := 0; i < 4; i++ {
 		if name1[i] {

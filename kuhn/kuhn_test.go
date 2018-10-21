@@ -342,19 +342,19 @@ func gameResult(result float32) func(state *KuhnGameState) bool {
 	}
 }
 
-func actorToMove(actorId ActorId) func(state *KuhnGameState) bool {
+func actorToMove(actorId ActorID) func(state *KuhnGameState) bool {
 	return func(state *KuhnGameState) bool {
 		return state.nextToMove == actorId
 	}
 }
 
-func stackEqualsTo(player ActorId, stack float32) func(state *KuhnGameState) bool {
+func stackEqualsTo(player ActorID, stack float32) func(state *KuhnGameState) bool {
 	return func(state *KuhnGameState) bool {
 		return math.Abs(float64(state.actors[player].(*Player).Stack-stack)) < 1e-9
 	}
 }
 
-func stackAfterEvaluationEqualsTo(player ActorId, stack float32) func(state *KuhnGameState) bool {
+func stackAfterEvaluationEqualsTo(player ActorID, stack float32) func(state *KuhnGameState) bool {
 	return func(state *KuhnGameState) bool {
 		state.Evaluate()
 		return math.Abs(float64(state.actors[player].(*Player).Stack-stack)) < 1e-9

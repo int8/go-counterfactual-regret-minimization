@@ -71,7 +71,7 @@ func (routine *CfrComputingRoutine) cfrUtilityRecursive(state GameState, reachA 
 		return state.Evaluate()
 	}
 
-	if state.CurrentActor().GetId() == ChanceId {
+	if state.CurrentActor().GetID() == ChanceId {
 		actions := state.Actions()
 		action := actions[rand.Intn(len(actions))]
 		return routine.cfrUtilityRecursive(state.Act(action), reachA, reachB)
@@ -85,7 +85,7 @@ func (routine *CfrComputingRoutine) cfrUtilityRecursive(state GameState, reachA 
 		childReachB := reachB
 		prob := routine.actionProbability(infSet, action.Name(), len(actions))
 
-		if state.CurrentActor().GetId() == PlayerA {
+		if state.CurrentActor().GetID() == PlayerA {
 			childReachA *= prob
 		} else {
 			childReachB *= prob
@@ -98,7 +98,7 @@ func (routine *CfrComputingRoutine) cfrUtilityRecursive(state GameState, reachA 
 	}
 
 	var cfrReach, reach float32
-	if state.CurrentActor().GetId() == PlayerA {
+	if state.CurrentActor().GetID() == PlayerA {
 		cfrReach, reach = reachB, reachA
 	} else {
 		cfrReach, reach = reachA, reachB
@@ -106,7 +106,7 @@ func (routine *CfrComputingRoutine) cfrUtilityRecursive(state GameState, reachA 
 
 	for _, action := range actions {
 		if cfrReach != 0 {
-			actionCfrRegret := float32(state.CurrentActor().GetId()) * cfrReach * (childrenStateUtilities[action.Name()] - value)
+			actionCfrRegret := float32(state.CurrentActor().GetID()) * cfrReach * (childrenStateUtilities[action.Name()] - value)
 			routine.cumulateCfrRegret(infSet, action.Name(), actionCfrRegret)
 		}
 		if reach != 0 {
@@ -142,7 +142,7 @@ func computeUtility(state GameState, sigma StrategyMap) float32 {
 		return state.Evaluate()
 	}
 
-	if state.CurrentActor().GetId() == ChanceId {
+	if state.CurrentActor().GetID() == ChanceId {
 		actions := state.Actions()
 		eval := float32(0.0)
 		for _, action := range actions {
