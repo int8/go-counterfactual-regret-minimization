@@ -3,14 +3,15 @@ package rhodeisland
 import . "github.com/int8/gopoker"
 
 func cardsDiffersByTwo(cards []Card) bool {
-	maxCard, minCard := int(C2), int(Ace)
+	maxCard, minCard := CardNameInt(C2), CardNameInt(Ace)
 	for _, card := range cards {
-		if int(card.Name) >= maxCard {
-			maxCard = int(card.Name)
+		cardInt := CardNameInt(card.Name)
+		if cardInt >= maxCard {
+			maxCard = cardInt
 		}
 
-		if int(card.Name) <= minCard {
-			minCard = int(card.Name)
+		if cardInt <= minCard {
+			minCard = cardInt
 		}
 	}
 	return maxCard-minCard == 2

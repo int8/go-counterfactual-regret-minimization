@@ -60,7 +60,7 @@ func (state *RIGameState) Evaluate() float32 {
 	if state.IsTerminal() {
 		if state.causingAction.Name() == Fold {
 			currentActor.UpdateStack(currentActor.Stack + state.table.Pot)
-			return float32(state.nextToMove) * state.table.Pot / 2
+			return float32(currentActor.GetId()) * state.table.Pot / 2
 		}
 		currentActorHandValueVector := currentActor.EvaluateHand(state.table)
 		currentActorOpponentHandValueVector := currentActorOpponent.EvaluateHand(state.table)
@@ -76,7 +76,7 @@ func (state *RIGameState) Evaluate() float32 {
 				return float32(currentActorOpponent.GetId()) * state.table.Pot / 2
 			}
 		}
-		state.playerActor(-state.CurrentActor().GetId()).UpdateStack(state.table.Pot / 2)
+		state.playerActor(currentActorOpponent.GetId()).UpdateStack(state.table.Pot / 2)
 		state.playerActor(state.CurrentActor().GetId()).UpdateStack(state.table.Pot / 2)
 		return 0.0
 	}
@@ -85,27 +85,39 @@ func (state *RIGameState) Evaluate() float32 {
 
 func (state *RIGameState) InformationSet() InformationSet {
 
-	privateCardName := byte(state.playerActor(state.nextToMove).Card.Name)
-	privateCardSuit := byte(state.playerActor(state.nextToMove).Card.Suit)
-	flopCardName := byte(NoCardName)
-	flopCardSuit := byte(NoCardSuit)
-	turnCardName := byte(NoCardName)
-	turnCardSuit := byte(NoCardSuit)
+	privateCardName := state.playerActor(state.nextToMove).Card.Name
+	privateCardSuit := state.playerActor(state.nextToMove).Card.Suit
+	flopCardName := NoCardName
+	flopCardSuit := NoCardSuit
+	turnCardName := NoCardName
+	turnCardSuit := NoCardSuit
 
 	if len(state.table.Cards) > 0 {
-		flopCardName = byte(state.table.Cards[0].Name)
-		flopCardSuit = byte(state.table.Cards[0].Suit)
+		flopCardName = state.table.Cards[0].Name
+		flopCardSuit = state.table.Cards[0].Suit
 	}
 
 	if len(state.table.Cards) > 1 {
-		turnCardName = byte(state.table.Cards[1].Name)
-		turnCardSuit = byte(state.table.Cards[1].Suit)
+		turnCardName = state.table.Cards[1].Name
+		turnCardSuit = state.table.Cards[1].Suit
 	}
-	informationSet := [InformationSetSize]byte{privateCardName, privateCardSuit, flopCardName, flopCardSuit, turnCardName, turnCardSuit}
+	//21 for cards (private + 2 public) +4 (Deal + Check + Bet + Call) * 3 [rounds] * 3 [bit size]
+	informationSet := [21 + 36]bool{
+		privateCardName[0], privateCardName[1], privateCardName[2], privateCardName[3],
+		privateCardSuit[0], privateCardSuit[1], privateCardSuit[2],
+		flopCardName[0], flopCardName[1], flopCardName[2], flopCardName[3],
+		flopCardSuit[0], flopCardSuit[1], flopCardSuit[2],
+		turnCardName[0], turnCardName[1], turnCardName[2], turnCardName[3],
+		turnCardSuit[0], turnCardSuit[1], turnCardSuit[2],
+	}
+
 	// there is no more than 50 actions overall
 	currentState := state
-	for i := 6; currentState.round != Start; i++ {
-		informationSet[i] = byte(currentState.causingAction.Name())
+	for i := 21; currentState.round != Start; i += 3 {
+		actionName := currentState.causingAction.Name()
+		informationSet[i] = actionName[0]
+		informationSet[i+1] = actionName[1]
+		informationSet[i+1] = actionName[2]
 		currentState = currentState.parent
 		if currentState == nil {
 			break
@@ -174,8 +186,8 @@ func (state *RIGameState) betSize() float32 {
 	return PostFlopBetSize
 }
 
-func Root(playerA *Player, playerB *Player) *RIGameState {
-	chance := &Chance{id: ChanceId, deck: CreateFullDeck(true)}
+func Root(playerA *Player, playerB *Player, deck Deck) *RIGameState {
+	chance := &Chance{id: ChanceId, deck: deck}
 
 	actors := map[ActorId]Actor{PlayerA: playerA, PlayerB: playerB, ChanceId: chance}
 	table := &Table{Pot: 0, Cards: []Card{}}

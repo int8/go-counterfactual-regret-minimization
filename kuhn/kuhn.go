@@ -60,7 +60,7 @@ func (state *KuhnGameState) Evaluate() float32 {
 	if state.IsTerminal() {
 		if state.causingAction.Name() == Fold {
 			currentActor.UpdateStack(currentActor.Stack + state.table.Pot)
-			return float32(-state.parent.nextToMove) * (state.table.Pot / 2)
+			return float32(currentActor.GetId()) * (state.table.Pot / 2)
 		}
 		currentActorHandValue := currentActor.EvaluateHand(state.table)
 		currentActorOpponentHandValue := currentActorOpponent.EvaluateHand(state.table)
@@ -74,20 +74,26 @@ func (state *KuhnGameState) Evaluate() float32 {
 		}
 	}
 	currentActor.UpdateStack(currentActor.Stack + state.table.Pot/2)
-	currentActorOpponent.UpdateStack(currentActor.Stack + state.table.Pot/2)
+	currentActorOpponent.UpdateStack(currentActorOpponent.Stack + state.table.Pot/2)
 	return 0.0
 }
 
 func (state *KuhnGameState) InformationSet() InformationSet {
 
-	privateCardName := byte(state.actors[state.nextToMove].(*Player).Card.Name)
-	privateCardSuit := byte(state.actors[state.nextToMove].(*Player).Card.Suit)
+	privateCardName := state.actors[state.nextToMove].(*Player).Card.Name
+	privateCardSuit := state.actors[state.nextToMove].(*Player).Card.Suit
 
-	informationSet := [InformationSetSize]byte{privateCardName, privateCardSuit}
+	informationSet := [21 + 36]bool{
+		privateCardName[0], privateCardName[1], privateCardName[2], privateCardName[3],
+		privateCardSuit[0], privateCardSuit[1], privateCardSuit[2],
+	}
 	// there is no more than 50 actions overall
 	currentState := state
-	for i := 2; currentState.round != Start; i++ {
-		informationSet[i] = byte(currentState.causingAction.Name())
+	for i := 7; currentState.round != Start; i += 3 {
+		actionName := currentState.causingAction.Name()
+		informationSet[i] = actionName[0]
+		informationSet[i+1] = actionName[1]
+		informationSet[i+1] = actionName[2]
 		currentState = currentState.parent
 		if currentState == nil {
 			break

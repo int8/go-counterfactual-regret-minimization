@@ -15,9 +15,11 @@ type Deck interface {
 	RemainingCards() []*Card
 }
 
-type CardName byte
+// CardName - there is 1-10 + J Q K A = 14 cards + NoCardName identifier / 4 bits is enough
+type CardName [4]bool
 
-type CardSuit byte
+// CardSuit - there is 4 card suits + NoCardSuit identifier - 3 bits is ok
+type CardSuit [3]bool
 
 type Card struct {
 	Name CardName
@@ -82,6 +84,52 @@ func (d *FullDeck) DealNextRandomCard() *Card {
 	return card
 }
 
+type LimitedDeck struct {
+	Cards map[*Card]bool
+}
+
+func CreateLimitedDeck(minCardName CardName, shuffleInitially bool) *LimitedDeck {
+
+	deck := *new(LimitedDeck)
+	deck.Cards = make(map[*Card]bool, 20)
+	for _, card := range allCards {
+		if cardNameCompare(card.Name, minCardName) > 0 {
+			deck.Cards[card] = true
+		}
+	}
+	deck.Shuffle()
+
+	return &deck
+}
+
+func (d *LimitedDeck) Shuffle() {
+	rand.Seed(time.Now().UTC().UnixNano())
+}
+
+func (d *LimitedDeck) RemoveCard(card *Card) {
+	delete(d.Cards, card)
+}
+
+func (d *LimitedDeck) CardsLeft() int {
+	return len(d.Cards)
+}
+
+func (d *LimitedDeck) RemainingCards() []*Card {
+	cards := make([]*Card, 0, len(d.Cards))
+	for card := range d.Cards {
+		cards = append(cards, card)
+	}
+	return cards
+}
+
+func (d *LimitedDeck) Clone() Deck {
+	cards := make(map[*Card]bool, len(d.Cards))
+	for k := range d.Cards {
+		cards[k] = true
+	}
+	return &LimitedDeck{cards}
+}
+
 func (c Card) String() string {
 	return fmt.Sprintf("%v%v", c.Suit, c.Name)
 }
@@ -111,6 +159,6 @@ func (n CardName) String() string {
 	case Ace:
 		return "A"
 	default:
-		return strconv.Itoa(int(n))
+		return strconv.Itoa(int(CardNameInt(n)))
 	}
 }

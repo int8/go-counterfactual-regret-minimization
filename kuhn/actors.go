@@ -51,7 +51,7 @@ func (player *Player) PlaceBet(table *Table, betSize float32) {
 }
 
 func (player *Player) EvaluateHand(table *Table) int8 {
-	return int8((*player).Card.Name)
+	return CardNameInt((*player).Card.Name)
 }
 
 func (player *Player) String() string {
