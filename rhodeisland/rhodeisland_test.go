@@ -666,16 +666,17 @@ func turnCard(publicTurnCard Card) func(state *RIGameState) bool {
 	}
 }
 
-func lastInformationSet(informationSet [InformationSetSize]bool) func(state *RIGameState) bool {
+func lastInformationSet(informationSet [InformationSetSizeBytes]byte) func(state *RIGameState) bool {
 	return func(state *RIGameState) bool {
 		currentInformationSet := state.InformationSet()
 		return currentInformationSet == informationSet
 	}
 }
 
-func createInformationSet(prvCard Card, flopCard Card, turnCard Card, actions []Action) [InformationSetSize]bool {
+func createInformationSet(prvCard Card, flopCard Card, turnCard Card, actions []Action) [InformationSetSizeBytes]byte {
 
-	informationSet := [InformationSetSize]bool{
+	informationSet := [InformationSetSizeBytes]byte{}
+	informationSetBool := [InformationSetSize]bool{
 		prvCard.Symbol[0], prvCard.Symbol[1], prvCard.Symbol[2], prvCard.Symbol[3],
 		prvCard.Suit[0], prvCard.Suit[1], prvCard.Suit[2],
 		flopCard.Symbol[0], flopCard.Symbol[1], flopCard.Symbol[2], flopCard.Symbol[3],
@@ -688,10 +689,13 @@ func createInformationSet(prvCard Card, flopCard Card, turnCard Card, actions []
 	for i := 21; len(actions) > 0; i += 3 {
 		// somehow tricky pop..
 		currentAction, actions = actions[len(actions)-1], actions[:len(actions)-1]
-		informationSet[i] = currentAction.Name()[0]
-		informationSet[i+1] = currentAction.Name()[1]
-		informationSet[i+2] = currentAction.Name()[2]
+		informationSetBool[i] = currentAction.Name()[0]
+		informationSetBool[i+1] = currentAction.Name()[1]
+		informationSetBool[i+2] = currentAction.Name()[2]
 	}
 
+	for i := 0; i < InformationSetSizeBytes; i++ {
+		informationSet[i] = CreateByte(informationSetBool[(i * 8):((i + 1) * 8)])
+	}
 	return informationSet
 }

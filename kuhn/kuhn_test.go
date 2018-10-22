@@ -398,16 +398,16 @@ func privateCards(playerACard Card, playerBCard Card) func(state *KuhnGameState)
 	}
 }
 
-func lastInformationSet(informationSet [InformationSetSize]bool) func(state *KuhnGameState) bool {
+func lastInformationSet(informationSet [InformationSetSizeBytes]byte) func(state *KuhnGameState) bool {
 	return func(state *KuhnGameState) bool {
 		currentInformationSet := state.InformationSet()
 		return currentInformationSet == informationSet
 	}
 }
 
-func createInformationSet(card Card, actions []Action) [InformationSetSize]bool {
+func createInformationSet(card Card, actions []Action) [InformationSetSizeBytes]byte {
 
-	informationSet := [InformationSetSize]bool{
+	informationSetBool := [InformationSetSize]bool{
 		card.Symbol[0], card.Symbol[1], card.Symbol[2], card.Symbol[3],
 		card.Suit[0], card.Suit[1], card.Suit[2],
 	}
@@ -415,9 +415,14 @@ func createInformationSet(card Card, actions []Action) [InformationSetSize]bool 
 	for i := 7; len(actions) > 0; i += 3 {
 		// somehow tricky pop..
 		currentAction, actions = actions[len(actions)-1], actions[:len(actions)-1]
-		informationSet[i] = currentAction.Name()[0]
-		informationSet[i+1] = currentAction.Name()[1]
-		informationSet[i+2] = currentAction.Name()[2]
+		informationSetBool[i] = currentAction.Name()[0]
+		informationSetBool[i+1] = currentAction.Name()[1]
+		informationSetBool[i+2] = currentAction.Name()[2]
+	}
+	informationSet := [InformationSetSizeBytes]byte{}
+
+	for i := 0; i < InformationSetSizeBytes; i++ {
+		informationSet[i] = CreateByte(informationSetBool[(i * 8):((i + 1) * 8)])
 	}
 
 	return informationSet

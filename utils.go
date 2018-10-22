@@ -31,3 +31,13 @@ func CardSymbol2Int(name1 CardSymbol) int8 {
 	}
 	return result
 }
+
+func CreateByte(x []bool) byte {
+	result := byte(0)
+	for i, elem := range x {
+		if elem {
+			result += byte(1) << uint8(i)
+		}
+	}
+	return result
+}

@@ -2,7 +2,6 @@ package cfr
 
 import (
 	"encoding/gob"
-	"fmt"
 	"github.com/int8/gopoker"
 	"github.com/int8/gopoker/kuhn"
 	"github.com/int8/gopoker/rhodeisland"
@@ -22,13 +21,13 @@ func TestKuhnPokerNashEquilibriumMatchesExpectedUtility(t *testing.T) {
 
 func TestRhodeISlandPokerNashEquilibrium(t *testing.T) {
 
-	rhodeisland.MaxRaises = 3
+	rhodeisland.MaxRaises = 0
 	root := createRootForRhodeIslandPokerTest(1000., 1000.)
 	routine := CfrComputingRoutine{root: root, regretsSum: StrategyMap{}, sigma: StrategyMap{}, sigmaSum: StrategyMap{}}
-	ne := routine.ComputeNashEquilibriumViaCFR(10000, true)
-	for infSet := range ne {
-		fmt.Fprintf(os.Stdout, "%v %v \n", rhodeisland.PrettyPrintInformationSet(infSet), ne[infSet])
-	}
+	routine.ComputeNashEquilibriumViaCFR(100000, true)
+	//for infSet := range ne {
+	//	fmt.Fprintf(os.Stdout, "%v %v \n", rhodeisland.PrettyPrintInformationSet(infSet), ne[infSet])
+	//}
 }
 
 func createRootForKuhnPokerTest(playerAStack float32, playerBStack float32) *kuhn.KuhnGameState {

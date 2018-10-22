@@ -11,8 +11,9 @@ var FoldAction = PlayerAction{Fold}
 const PreFlopBetSize float32 = 10.
 const PostFlopBetSize float32 = 20.
 
-const InformationSetSize = 57 + 9*4
+const InformationSetSize = 8 * 8
+const InformationSetSizeBytes = 8
 
-var MaxRaises = 3
+var MaxRaises = 0
 
 const Ante float32 = 5.0

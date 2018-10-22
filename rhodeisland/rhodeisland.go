@@ -94,8 +94,9 @@ func (state *RIGameState) InformationSet() InformationSet {
 	if len(state.table.Cards) > 1 {
 		turnCard = Card{state.table.Cards[1].Symbol, state.table.Cards[1].Suit}
 	}
+	informationSet := [InformationSetSizeBytes]byte{}
 
-	infSet := [InformationSetSize]bool{
+	infSetBool := [InformationSetSize]bool{
 		privateCard.Symbol[0], privateCard.Symbol[1], privateCard.Symbol[2], privateCard.Symbol[3],
 		privateCard.Suit[0], privateCard.Suit[1], privateCard.Suit[2],
 		flopCard.Symbol[0], flopCard.Symbol[1], flopCard.Symbol[2], flopCard.Symbol[3],
@@ -107,16 +108,21 @@ func (state *RIGameState) InformationSet() InformationSet {
 	currentState := state
 	for i := 21; currentState.round != Start; i += 3 {
 		actionName := currentState.causingAction.Name()
-		infSet[i] = actionName[0]
-		infSet[i+1] = actionName[1]
-		infSet[i+2] = actionName[2]
+		infSetBool[i] = actionName[0]
+		infSetBool[i+1] = actionName[1]
+		infSetBool[i+2] = actionName[2]
 
 		currentState = currentState.parent
 		if currentState == nil {
 			break
 		}
 	}
-	return InformationSet(infSet)
+
+	for i := 0; i < InformationSetSizeBytes; i++ {
+		informationSet[i] = CreateByte(infSetBool[(i * 8):((i + 1) * 8)])
+	}
+
+	return InformationSet(informationSet)
 }
 
 func (state *RIGameState) stack(id ActorID) float32 {

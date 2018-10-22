@@ -1,6 +1,7 @@
 package cfr
 
 import (
+	"fmt"
 	. "github.com/int8/gopoker"
 	"math/rand"
 )
@@ -32,6 +33,7 @@ func (routine *CfrComputingRoutine) ComputeNashEquilibriumViaCFR(iterations int,
 
 	for i := 0; i < iterations; i++ {
 		if recursive {
+			fmt.Println(i)
 			routine.cfrUtilityRecursive(routine.root, 1, 1)
 		}
 	}
@@ -63,7 +65,6 @@ func (routine *CfrComputingRoutine) actionProbability(infSet InformationSet, act
 	return routine.sigma[infSet][action]
 }
 
-//TODO: replace recursive approach with stack based approach - should run much faster (?)
 func (routine *CfrComputingRoutine) cfrUtilityRecursive(state GameState, reachA float32, reachB float32) float32 {
 
 	childrenStateUtilities := map[ActionName]float32{}

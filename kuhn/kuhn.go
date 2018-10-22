@@ -82,22 +82,27 @@ func (state *KuhnGameState) InformationSet() InformationSet {
 
 	privateCardSymbol := state.actors[state.nextToMove].(*Player).Card.Symbol
 	privateCardSuit := state.actors[state.nextToMove].(*Player).Card.Suit
+	informationSet := [InformationSetSizeBytes]byte{}
 
-	informationSet := [InformationSetSize]bool{
+	informationSetBool := [InformationSetSize]bool{
 		privateCardSymbol[0], privateCardSymbol[1], privateCardSymbol[2], privateCardSymbol[3],
 		privateCardSuit[0], privateCardSuit[1], privateCardSuit[2],
 	}
 	currentState := state
 	for i := 7; currentState.round != Start; i += 3 {
 		actionName := currentState.causingAction.Name()
-		informationSet[i] = actionName[0]
-		informationSet[i+1] = actionName[1]
-		informationSet[i+2] = actionName[2]
+		informationSetBool[i] = actionName[0]
+		informationSetBool[i+1] = actionName[1]
+		informationSetBool[i+2] = actionName[2]
 		currentState = currentState.parent
 		if currentState == nil {
 			break
 		}
 	}
+	for i := 0; i < InformationSetSizeBytes; i++ {
+		informationSet[i] = CreateByte(informationSetBool[(i * 8):((i + 1) * 8)])
+	}
+
 	return InformationSet(informationSet)
 }
 
