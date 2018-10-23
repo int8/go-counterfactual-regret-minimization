@@ -3,11 +3,13 @@ package kuhn
 import (
 	"errors"
 	. "github.com/int8/gopoker"
+	"github.com/int8/gopoker/cards"
+	"github.com/int8/gopoker/table"
 )
 
 type Chance struct {
 	id   ActorID
-	deck Deck
+	deck cards.Deck
 }
 
 func (chance *Chance) GetID() ActorID {
@@ -16,7 +18,7 @@ func (chance *Chance) GetID() ActorID {
 
 type Player struct {
 	Id      ActorID
-	Card    *Card
+	Card    *cards.Card
 	Stack   float32
 	Actions []Action
 }
@@ -41,17 +43,17 @@ func (player *Player) Opponent() ActorID {
 	return -player.Id
 }
 
-func (player *Player) CollectPrivateCard(card *Card) {
+func (player *Player) CollectPrivateCard(card *cards.Card) {
 	player.Card = card
 }
 
-func (player *Player) PlaceBet(table *Table, betSize float32) {
+func (player *Player) PlaceBet(table *table.PokerTable, betSize float32) {
 	table.AddToPot(betSize)
 	player.Stack -= betSize
 }
 
-func (player *Player) EvaluateHand(table *Table) int8 {
-	return CardSymbol2Int((*player).Card.Symbol)
+func (player *Player) EvaluateHand(table *table.PokerTable) int8 {
+	return cards.CardSymbol2Int((*player).Card.Symbol)
 }
 
 func (player *Player) String() string {

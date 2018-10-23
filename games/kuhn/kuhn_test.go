@@ -2,6 +2,7 @@ package kuhn
 
 import (
 	. "github.com/int8/gopoker"
+	. "github.com/int8/gopoker/cards"
 	"math"
 	"testing"
 )

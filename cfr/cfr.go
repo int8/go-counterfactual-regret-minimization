@@ -1,7 +1,6 @@
 package cfr
 
 import (
-	"fmt"
 	. "github.com/int8/gopoker"
 	"math/rand"
 )
@@ -33,7 +32,6 @@ func (routine *CfrComputingRoutine) ComputeNashEquilibriumViaCFR(iterations int,
 
 	for i := 0; i < iterations; i++ {
 		if recursive {
-			fmt.Println(i)
 			routine.cfrUtilityRecursive(routine.root, 1, 1)
 		}
 	}

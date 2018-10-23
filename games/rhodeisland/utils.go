@@ -1,7 +1,6 @@
 package rhodeisland
 
 import (
-	"fmt"
 	. "github.com/int8/gopoker"
 )
 

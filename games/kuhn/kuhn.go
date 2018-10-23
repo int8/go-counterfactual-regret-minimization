@@ -3,6 +3,8 @@ package kuhn
 import (
 	"errors"
 	. "github.com/int8/gopoker"
+	"github.com/int8/gopoker/cards"
+	"github.com/int8/gopoker/table"
 )
 
 // KuhnGameState - Kuhn Poker Game State
@@ -10,7 +12,7 @@ type KuhnGameState struct {
 	round         Round
 	parent        *KuhnGameState
 	causingAction Action
-	table         *Table
+	table         *table.PokerTable
 	actors        map[ActorID]Actor
 	nextToMove    ActorID
 	terminal      bool
@@ -154,7 +156,7 @@ func Root(playerA *Player, playerB *Player) *KuhnGameState {
 	chance := &Chance{id: ChanceId, deck: CreateKuhnDeck(true)}
 
 	actors := map[ActorID]Actor{PlayerA: playerA, PlayerB: playerB, ChanceId: chance}
-	table := &Table{Pot: 0, Cards: []Card{}}
+	table := &table.PokerTable{Pot: 0, Cards: []cards.Card{}}
 
 	return &KuhnGameState{round: Start, table: table,
 		actors: actors, nextToMove: ChanceId, causingAction: nil}
@@ -167,7 +169,7 @@ func createChild(blueprint *KuhnGameState, round Round, Action Action, nextToMov
 	return &child
 }
 
-func (state *KuhnGameState) dealPrivateCards(cardA *Card, cardB *Card) *KuhnGameState {
+func (state *KuhnGameState) dealPrivateCards(cardA *cards.Card, cardB *cards.Card) *KuhnGameState {
 
 	child := createChild(state, state.round.NextRound(), DealPrivateCardsAction{cardA, cardB}, PlayerA, false)
 	// important to deal using child deck / not current chance deck
