@@ -35,16 +35,21 @@ type GameState interface {
 Example implementations of Rhode Island Poker and Kuhn Poker are included in repository.
 
 ```go 
-import (	
+package main
+
+import (
 	"github.com/int8/go-counterfactual-regret-minimization/acting"
 	"github.com/int8/go-counterfactual-regret-minimization/cards"
-	"github.com/int8/go-counterfactual-regret-minimization/games/rhodeisland"
 	"github.com/int8/go-counterfactual-regret-minimization/cfr"
+	"github.com/int8/go-counterfactual-regret-minimization/games/rhodeisland"
 )
 
-playerA := &rhodeisland.Player{Id: acting.PlayerA, Actions: nil, Card: nil, Stack: 1000.}
-playerB := &rhodeisland.Player{Id: acting.PlayerB, Actions: nil, Card: nil, Stack: 1000.}
-root := rhodeisland.Root(playerA, playerB, cards.CreateLimitedDeck(cards.C10, true))
-routine := cfr.CreateComputingRoutine(root)
-nashEquilibrium := routine.ComputeNashEquilibriumViaCFR(10000)
+func main() {
+	rhodeisland.MaxRaises = 0
+	playerA := &rhodeisland.Player{Id: acting.PlayerA, Actions: nil, Card: nil, Stack: 1000.}
+	playerB := &rhodeisland.Player{Id: acting.PlayerB, Actions: nil, Card: nil, Stack: 1000.}
+	root := rhodeisland.Root(playerA, playerB, cards.CreateLimitedDeck(cards.C10, true))
+	routine := cfr.CreateComputingRoutine(root)
+	routine.ComputeNashEquilibriumViaCFR(1000)
+}
 ```
