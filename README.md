@@ -22,7 +22,7 @@ To use it for your imperfect-information sum-zero strictly competitive two playe
 // GameState - state of the game interface
 type GameState interface {
 	Parent() GameState
-	Act(Action acting.Action) GameState
+	Act(action acting.Action) GameState
 	InformationSet() InformationSet
 	Actions() []acting.Action
 	IsTerminal() bool
@@ -49,5 +49,5 @@ func rhodeIslandRoot(playerAStack float32, playerBStack float32) *rhodeisland.RI
 
 root := rhodeIslandRoot(1000., 1000.)
 routine := ComputingRoutine{root: root, regretsSum: StrategyMap{}, sigma: StrategyMap{}, sigmaSum: StrategyMap{}}
-ne := routine.ComputeNashEquilibriumViaCFR(10000)
+nashEquilibrium := routine.ComputeNashEquilibriumViaCFR(10000)
 ```
