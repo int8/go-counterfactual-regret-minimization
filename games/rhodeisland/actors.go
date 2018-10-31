@@ -2,9 +2,9 @@ package rhodeisland
 
 import (
 	"errors"
-	"github.com/int8/gopoker/acting"
-	"github.com/int8/gopoker/cards"
-	"github.com/int8/gopoker/table"
+	"github.com/int8/go-counterfactual-regret-minimization/acting"
+	"github.com/int8/go-counterfactual-regret-minimization/cards"
+	"github.com/int8/go-counterfactual-regret-minimization/table"
 )
 
 type Chance struct {

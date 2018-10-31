@@ -1,7 +1,7 @@
 package kuhn
 
 import (
-	"github.com/int8/gopoker/cards"
+	"github.com/int8/go-counterfactual-regret-minimization/cards"
 	"math/rand"
 	"time"
 )

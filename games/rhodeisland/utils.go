@@ -1,9 +1,9 @@
 package rhodeisland
 
 import (
-	"github.com/int8/gopoker/acting"
-	"github.com/int8/gopoker/cards"
-	"github.com/int8/gopoker/rounds"
+	"github.com/int8/go-counterfactual-regret-minimization/acting"
+	"github.com/int8/go-counterfactual-regret-minimization/cards"
+	"github.com/int8/go-counterfactual-regret-minimization/rounds"
 )
 
 //

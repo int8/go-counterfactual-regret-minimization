@@ -1,10 +1,10 @@
 package kuhn
 
 import (
-	"github.com/int8/gopoker/acting"
-	"github.com/int8/gopoker/cards"
-	"github.com/int8/gopoker/games"
-	"github.com/int8/gopoker/rounds"
+	"github.com/int8/go-counterfactual-regret-minimization/acting"
+	"github.com/int8/go-counterfactual-regret-minimization/cards"
+	"github.com/int8/go-counterfactual-regret-minimization/games"
+	"github.com/int8/go-counterfactual-regret-minimization/rounds"
 	"math"
 	"testing"
 )

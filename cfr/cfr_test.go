@@ -2,18 +2,18 @@ package cfr
 
 import (
 	"encoding/gob"
-	"github.com/int8/gopoker/acting"
-	"github.com/int8/gopoker/cards"
-	"github.com/int8/gopoker/games/kuhn"
-	"github.com/int8/gopoker/games/rhodeisland"
+	"github.com/int8/go-counterfactual-regret-minimization/acting"
+	"github.com/int8/go-counterfactual-regret-minimization/cards"
+	"github.com/int8/go-counterfactual-regret-minimization/games/kuhn"
+	"github.com/int8/go-counterfactual-regret-minimization/games/rhodeisland"
 	"os"
 	"testing"
 )
 
 func TestKuhnPokerNashEquilibriumMatchesExpectedUtility(t *testing.T) {
 	root := createRootForKuhnPokerTest(1000., 1000.)
-	routine := CfrComputingRoutine{root: root, regretsSum: StrategyMap{}, sigma: StrategyMap{}, sigmaSum: StrategyMap{}}
-	ne := routine.ComputeNashEquilibriumViaCFR(50000, true)
+	routine := ComputingRoutine{root: root, regretsSum: StrategyMap{}, sigma: StrategyMap{}, sigmaSum: StrategyMap{}}
+	ne := routine.ComputeNashEquilibriumViaCFR(50000)
 	utility := computeUtility(root, ne)
 	if utility > -0.05 || utility < -0.06 {
 		t.Error("Unless you are extremely unlucky, something is wrong with your CFR implementation")
@@ -24,8 +24,8 @@ func TestRhodeISlandPokerNashEquilibrium(t *testing.T) {
 
 	rhodeisland.MaxRaises = 0
 	root := createRootForRhodeIslandPokerTest(1000., 1000.)
-	routine := CfrComputingRoutine{root: root, regretsSum: StrategyMap{}, sigma: StrategyMap{}, sigmaSum: StrategyMap{}}
-	routine.ComputeNashEquilibriumViaCFR(10000, true)
+	routine := ComputingRoutine{root: root, regretsSum: StrategyMap{}, sigma: StrategyMap{}, sigmaSum: StrategyMap{}}
+	routine.ComputeNashEquilibriumViaCFR(10000)
 }
 
 func createRootForKuhnPokerTest(playerAStack float32, playerBStack float32) *kuhn.KuhnGameState {

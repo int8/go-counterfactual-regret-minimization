@@ -1,7 +1,7 @@
 package kuhn
 
 import (
-	"github.com/int8/gopoker/acting"
+	"github.com/int8/go-counterfactual-regret-minimization/acting"
 )
 
 func actionInSlice(a acting.Action, actions []acting.Action) bool {

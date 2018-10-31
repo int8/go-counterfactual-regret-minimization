@@ -1,6 +1,6 @@
 package games
 
-import "github.com/int8/gopoker/acting"
+import "github.com/int8/go-counterfactual-regret-minimization/acting"
 
 type InformationSet interface{}
 

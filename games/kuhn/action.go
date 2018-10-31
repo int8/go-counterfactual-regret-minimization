@@ -1,9 +1,9 @@
 package kuhn
 
 import (
-	"github.com/int8/gopoker/acting"
+	"github.com/int8/go-counterfactual-regret-minimization/acting"
 )
-import "github.com/int8/gopoker/cards"
+import "github.com/int8/go-counterfactual-regret-minimization/cards"
 
 type PlayerAction struct {
 	name acting.ActionName

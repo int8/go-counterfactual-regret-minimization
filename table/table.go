@@ -1,6 +1,6 @@
 package table
 
-import "github.com/int8/gopoker/cards"
+import "github.com/int8/go-counterfactual-regret-minimization/cards"
 
 type PokerTable struct {
 	Pot   float32
