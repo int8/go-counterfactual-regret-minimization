@@ -12,7 +12,7 @@ import (
 
 func TestKuhnPokerNashEquilibriumMatchesExpectedUtility(t *testing.T) {
 	root := createRootForKuhnPokerTest(1000., 1000.)
-	routine := ComputingRoutine{root: root, regretsSum: StrategyMap{}, sigma: StrategyMap{}, sigmaSum: StrategyMap{}}
+	routine := CreateComputingRoutine(root)
 	ne := routine.ComputeNashEquilibriumViaCFR(50000)
 	utility := computeUtility(root, ne)
 	if utility > -0.05 || utility < -0.06 {
@@ -24,7 +24,7 @@ func TestRhodeISlandPokerNashEquilibrium(t *testing.T) {
 
 	rhodeisland.MaxRaises = 0
 	root := createRootForRhodeIslandPokerTest(1000., 1000.)
-	routine := ComputingRoutine{root: root, regretsSum: StrategyMap{}, sigma: StrategyMap{}, sigmaSum: StrategyMap{}}
+	routine := CreateComputingRoutine(root)
 	routine.ComputeNashEquilibriumViaCFR(10000)
 }
 

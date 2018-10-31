@@ -15,6 +15,12 @@ type ComputingRoutine struct {
 	root       games.GameState
 }
 
+
+func CreateComputingRoutine(root games.GameState) *ComputingRoutine {
+	routine := ComputingRoutine{root: root, regretsSum: StrategyMap{}, sigma: StrategyMap{}, sigmaSum: StrategyMap{}}
+	return &routine
+}
+
 func (routine *ComputingRoutine) cumulateCfrRegret(infSet games.InformationSet, action acting.ActionName, value float32) {
 	if _, ok := routine.regretsSum[infSet]; !ok {
 		routine.regretsSum[infSet] = map[acting.ActionName]float32{}
