@@ -2,26 +2,28 @@ package kuhn
 
 import (
 	"errors"
-	. "github.com/int8/gopoker"
+	"github.com/int8/gopoker/acting"
+	"github.com/int8/gopoker/cards"
+	"github.com/int8/gopoker/table"
 )
 
 type Chance struct {
-	id   ActorID
-	deck Deck
+	id   acting.ActorID
+	deck cards.Deck
 }
 
-func (chance *Chance) GetID() ActorID {
+func (chance *Chance) GetID() acting.ActorID {
 	return chance.id
 }
 
 type Player struct {
-	Id      ActorID
-	Card    *Card
+	Id      acting.ActorID
+	Card    *cards.Card
 	Stack   float32
-	Actions []Action
+	Actions []acting.Action
 }
 
-func (player *Player) GetID() ActorID {
+func (player *Player) GetID() acting.ActorID {
 	return player.Id
 }
 
@@ -37,21 +39,21 @@ func (player *Player) Clone() *Player {
 	return &Player{Card: player.Card, Id: player.Id, Stack: player.Stack, Actions: nil}
 }
 
-func (player *Player) Opponent() ActorID {
+func (player *Player) Opponent() acting.ActorID {
 	return -player.Id
 }
 
-func (player *Player) CollectPrivateCard(card *Card) {
+func (player *Player) CollectPrivateCard(card *cards.Card) {
 	player.Card = card
 }
 
-func (player *Player) PlaceBet(table *Table, betSize float32) {
+func (player *Player) PlaceBet(table *table.PokerTable, betSize float32) {
 	table.AddToPot(betSize)
 	player.Stack -= betSize
 }
 
-func (player *Player) EvaluateHand(table *Table) int8 {
-	return CardSymbol2Int((*player).Card.Symbol)
+func (player *Player) EvaluateHand(table *table.PokerTable) int8 {
+	return cards.CardSymbol2Int((*player).Card.Symbol)
 }
 
 func (player *Player) String() string {
@@ -63,5 +65,5 @@ func (player *Player) String() string {
 		return "Chance"
 	}
 	//TODO: not idiomatic !
-	panic(errors.New("Code not reachable."))
+	panic(errors.New("code not reachable"))
 }

@@ -1,10 +1,4 @@
-package gopoker
-
-const (
-	PlayerA  ActorID = 1
-	PlayerB          = -PlayerA
-	ChanceId         = 0
-)
+package cards
 
 var (
 	NoCardSuit CardSuit = to3BinArray(0) // no card
@@ -29,26 +23,6 @@ var (
 	Queen        CardSymbol = to4BinArray(11)
 	King         CardSymbol = to4BinArray(12)
 	Ace          CardSymbol = to4BinArray(13)
-)
-
-const (
-	Start Round = iota
-	PreFlop
-	Flop
-	Turn
-	River
-	End
-)
-
-var (
-	NoAction         ActionName = to3BinArray(0)
-	DealPublicCards  ActionName = to3BinArray(1)
-	DealPrivateCards ActionName = to3BinArray(2)
-	Fold             ActionName = to3BinArray(3)
-	Check            ActionName = to3BinArray(4)
-	Bet              ActionName = to3BinArray(5)
-	Call             ActionName = to3BinArray(6)
-	Raise            ActionName = to3BinArray(7)
 )
 
 var (

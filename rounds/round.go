@@ -1,8 +1,17 @@
-package gopoker
+package rounds
 
-type Round int8
+type PokerRound int8
 
-func (round Round) NextRound() Round {
+const (
+	Start PokerRound = iota
+	PreFlop
+	Flop
+	Turn
+	River
+	End
+)
+
+func (round PokerRound) NextRound() PokerRound {
 	switch round {
 	case Start:
 		return PreFlop
@@ -17,7 +26,7 @@ func (round Round) NextRound() Round {
 	return End
 }
 
-func (round Round) String() string {
+func (round PokerRound) String() string {
 	switch round {
 	case Start:
 		return "Start"

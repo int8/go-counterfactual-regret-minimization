@@ -1,13 +1,16 @@
 package kuhn
 
 import (
-	. "github.com/int8/gopoker"
+	"github.com/int8/gopoker/acting"
+	"github.com/int8/gopoker/cards"
+	"github.com/int8/gopoker/games"
+	"github.com/int8/gopoker/rounds"
 	"math"
 	"testing"
 )
 
 type ActionTestsTriple struct {
-	Action   Action
+	Action   acting.Action
 	preTest  func(state *KuhnGameState) bool
 	postTest func(state *KuhnGameState) bool
 }
@@ -22,8 +25,8 @@ func TestGameCreation(t *testing.T) {
 		t.Error("Root node should not have nil parent")
 	}
 
-	if root.round != Start {
-		t.Error("Initial round of the game should be Start")
+	if root.round != rounds.Start {
+		t.Error("Initial round of the game should be rounds.Start")
 	}
 
 	if root.IsTerminal() == true {
@@ -33,14 +36,14 @@ func TestGameCreation(t *testing.T) {
 	actions := root.Actions()
 
 	if len(actions) != 3*2 {
-		t.Errorf("Game root should have %v actions available, %v actions available", 3*2, len(actions))
+		t.Errorf("Game root should have %v acting available, %v acting available", 3*2, len(actions))
 	}
 
 }
 
 func TestIfParentsCorrect(t *testing.T) {
 	root := createRootForTest(100., 100.)
-	child := root.Act(DealPrivateCardsAction{&KingHearts, &JackHearts})
+	child := root.Act(DealPrivateCardsAction{&cards.KingHearts, &cards.JackHearts})
 	if child.Parent() != root {
 		t.Error("Root child should have root as a parent")
 	}
@@ -49,7 +52,7 @@ func TestIfParentsCorrect(t *testing.T) {
 func TestIfStackLimitsAvailableActions(t *testing.T) {
 	root5 := createRootForTest(1., 1.)
 	actionsTestsPairs := []ActionTestsTriple{
-		{DealPrivateCardsAction{&KingHearts, &QueenHearts}, noTest(), noTest()},
+		{DealPrivateCardsAction{&cards.KingHearts, &cards.QueenHearts}, noTest(), noTest()},
 		{CheckAction, onlyCheckAvailable(), noTest()},
 		{CheckAction, onlyCheckAvailable(), gameEnd()},
 	}
@@ -57,7 +60,7 @@ func TestIfStackLimitsAvailableActions(t *testing.T) {
 
 	root15 := createRootForTest(2., 2.)
 	actionsTestsPairs = []ActionTestsTriple{
-		{DealPrivateCardsAction{&KingHearts, &QueenHearts}, noTest(), noTest()},
+		{DealPrivateCardsAction{&cards.KingHearts, &cards.QueenHearts}, noTest(), noTest()},
 		{CheckAction, checkAndBetAvailable(), noTest()},
 		{CheckAction, checkAndBetAvailable(), gameEnd()},
 	}
@@ -69,9 +72,9 @@ func TestIfStackLimitsAvailableActions(t *testing.T) {
 func TestGamePlayAssertRounds(t *testing.T) {
 	root := createRootForTest(100., 100.)
 	actionsTestsPairs := []ActionTestsTriple{
-		{DealPrivateCardsAction{&KingHearts, &QueenHearts}, roundCheck(Start), roundCheck(PreFlop)},
-		{CheckAction, roundCheck(PreFlop), roundCheck(PreFlop)},
-		{CheckAction, roundCheck(PreFlop), roundCheck(PreFlop)},
+		{DealPrivateCardsAction{&cards.KingHearts, &cards.QueenHearts}, roundCheck(rounds.Start), roundCheck(rounds.PreFlop)},
+		{CheckAction, roundCheck(rounds.PreFlop), roundCheck(rounds.PreFlop)},
+		{CheckAction, roundCheck(rounds.PreFlop), roundCheck(rounds.PreFlop)},
 	}
 	testGamePlayAfterEveryAction(root, actionsTestsPairs, t)
 }
@@ -79,17 +82,17 @@ func TestGamePlayAssertRounds(t *testing.T) {
 func TestGamePlay_CheckIfPlayerToMoveCorrect(t *testing.T) {
 	root := createRootForTest(100., 100.)
 	actionsTestsPairs := []ActionTestsTriple{
-		{DealPrivateCardsAction{&KingHearts, &QueenHearts}, actorToMove(ChanceId), actorToMove(PlayerA)},
-		{CheckAction, actorToMove(PlayerA), actorToMove(PlayerB)},
-		{CheckAction, actorToMove(PlayerB), gameEnd()},
+		{DealPrivateCardsAction{&cards.KingHearts, &cards.QueenHearts}, actorToMove(acting.ChanceId), actorToMove(acting.PlayerA)},
+		{CheckAction, actorToMove(acting.PlayerA), actorToMove(acting.PlayerB)},
+		{CheckAction, actorToMove(acting.PlayerB), gameEnd()},
 	}
 	testGamePlayAfterEveryAction(root, actionsTestsPairs, t)
 
 	actionsTestsPairs = []ActionTestsTriple{
-		{DealPrivateCardsAction{&KingHearts, &QueenHearts}, actorToMove(ChanceId), actorToMove(PlayerA)},
-		{CheckAction, actorToMove(PlayerA), actorToMove(PlayerB)},
-		{BetAction, actorToMove(PlayerB), actorToMove(PlayerA)},
-		{CallAction, actorToMove(PlayerA), gameEnd()},
+		{DealPrivateCardsAction{&cards.KingHearts, &cards.QueenHearts}, actorToMove(acting.ChanceId), actorToMove(acting.PlayerA)},
+		{CheckAction, actorToMove(acting.PlayerA), actorToMove(acting.PlayerB)},
+		{BetAction, actorToMove(acting.PlayerB), actorToMove(acting.PlayerA)},
+		{CallAction, actorToMove(acting.PlayerA), gameEnd()},
 	}
 	testGamePlayAfterEveryAction(root, actionsTestsPairs, t)
 }
@@ -97,16 +100,16 @@ func TestGamePlay_CheckIfPlayerToMoveCorrect(t *testing.T) {
 func TestGamePlay_CheckIfStacksChange(t *testing.T) {
 	root := createRootForTest(100., 100.)
 	actionsTestsPairs := []ActionTestsTriple{
-		{DealPrivateCardsAction{&JackHearts, &KingHearts}, stackEqualsTo(PlayerA, 100.), stackEqualsTo(PlayerA, 100.-Ante)},
-		{CheckAction, stackEqualsTo(PlayerA, 100.-Ante), stackEqualsTo(PlayerA, 100.-Ante)},
-		{CheckAction, stackEqualsTo(PlayerB, 100.-Ante), stackEqualsTo(PlayerB, 100.-Ante)},
+		{DealPrivateCardsAction{&cards.JackHearts, &cards.KingHearts}, stackEqualsTo(acting.PlayerA, 100.), stackEqualsTo(acting.PlayerA, 100.-Ante)},
+		{CheckAction, stackEqualsTo(acting.PlayerA, 100.-Ante), stackEqualsTo(acting.PlayerA, 100.-Ante)},
+		{CheckAction, stackEqualsTo(acting.PlayerB, 100.-Ante), stackEqualsTo(acting.PlayerB, 100.-Ante)},
 	}
 	testGamePlayAfterEveryAction(root, actionsTestsPairs, t)
 
 	actionsTestsPairs = []ActionTestsTriple{
-		{DealPrivateCardsAction{&JackHearts, &KingHearts}, stackEqualsTo(PlayerA, 100.), stackEqualsTo(PlayerA, 100.-Ante)},
-		{BetAction, stackEqualsTo(PlayerA, 100.-Ante), stackEqualsTo(PlayerA, 100.-Ante-BetSize)},
-		{CallAction, stackEqualsTo(PlayerB, 100.-Ante), stackEqualsTo(PlayerB, 100.-Ante-BetSize)},
+		{DealPrivateCardsAction{&cards.JackHearts, &cards.KingHearts}, stackEqualsTo(acting.PlayerA, 100.), stackEqualsTo(acting.PlayerA, 100.-Ante)},
+		{BetAction, stackEqualsTo(acting.PlayerA, 100.-Ante), stackEqualsTo(acting.PlayerA, 100.-Ante-BetSize)},
+		{CallAction, stackEqualsTo(acting.PlayerB, 100.-Ante), stackEqualsTo(acting.PlayerB, 100.-Ante-BetSize)},
 	}
 	testGamePlayAfterEveryAction(root, actionsTestsPairs, t)
 }
@@ -114,14 +117,14 @@ func TestGamePlay_CheckIfStacksChange(t *testing.T) {
 func TestGamePlay_CheckIfPotChanges(t *testing.T) {
 	root := createRootForTest(100., 100.)
 	actionsTestsPairs := []ActionTestsTriple{
-		{DealPrivateCardsAction{&QueenHearts, &KingHearts}, potEqualsTo(0.0), potEqualsTo(2.0)},
+		{DealPrivateCardsAction{&cards.QueenHearts, &cards.KingHearts}, potEqualsTo(0.0), potEqualsTo(2.0)},
 		{BetAction, potEqualsTo(2), potEqualsTo(3)},
 		{CallAction, potEqualsTo(3), potEqualsTo(4)},
 	}
 	testGamePlayAfterEveryAction(root, actionsTestsPairs, t)
 
 	actionsTestsPairs = []ActionTestsTriple{
-		{DealPrivateCardsAction{&JackHearts, &KingHearts}, potEqualsTo(0.0), potEqualsTo(2.0)},
+		{DealPrivateCardsAction{&cards.JackHearts, &cards.KingHearts}, potEqualsTo(0.0), potEqualsTo(2.0)},
 		{CheckAction, potEqualsTo(2), potEqualsTo(2)},
 		{CheckAction, potEqualsTo(2), potEqualsTo(2)},
 	}
@@ -133,7 +136,7 @@ func TestIfCardsGoToPlayers(t *testing.T) {
 	root := createRootForTest(100., 100)
 
 	actionsTestsPairs := []ActionTestsTriple{
-		{DealPrivateCardsAction{&QueenHearts, &KingHearts}, noTest(), privateCards(QueenHearts, KingHearts)},
+		{DealPrivateCardsAction{&cards.QueenHearts, &cards.KingHearts}, noTest(), privateCards(cards.QueenHearts, cards.KingHearts)},
 		{CheckAction, noTest(), noTest()},
 		{CheckAction, noTest(), gameEnd()}}
 
@@ -142,18 +145,18 @@ func TestIfCardsGoToPlayers(t *testing.T) {
 
 func TestGamePlay_CheckIfChildPointersDifferFromParentsPointers(t *testing.T) {
 	root := createRootForTest(100., 100.)
-	child := root.Act(DealPrivateCardsAction{&KingHearts, &JackHearts})
+	child := root.Act(DealPrivateCardsAction{&cards.KingHearts, &cards.JackHearts})
 
-	if child.(*KuhnGameState).actors[ChanceId] == root.actors[ChanceId] {
+	if child.(*KuhnGameState).actors[acting.ChanceId] == root.actors[acting.ChanceId] {
 		t.Error("chance actor refers to the same value in both child and parent")
 	}
 
-	if child.(*KuhnGameState).actors[PlayerA] == root.actors[PlayerA] {
-		t.Error("PlayerA actor refers to the same value in both child and parent")
+	if child.(*KuhnGameState).actors[acting.PlayerA] == root.actors[acting.PlayerA] {
+		t.Error("acting.PlayerA actor refers to the same value in both child and parent")
 	}
 
-	if child.(*KuhnGameState).actors[PlayerB] == root.actors[PlayerB] {
-		t.Error("PlayerB actor refers to the same value in both child and parent")
+	if child.(*KuhnGameState).actors[acting.PlayerB] == root.actors[acting.PlayerB] {
+		t.Error("acting.PlayerB actor refers to the same value in both child and parent")
 	}
 
 	if child.(*KuhnGameState).table == root.table {
@@ -162,139 +165,139 @@ func TestGamePlay_CheckIfChildPointersDifferFromParentsPointers(t *testing.T) {
 }
 
 func TestGamePlayEvaluationBWinsCheckBetFold(t *testing.T) {
-	hands := DealPrivateCardsAction{&QueenHearts, &JackHearts}
+	hands := DealPrivateCardsAction{&cards.QueenHearts, &cards.JackHearts}
 	root := createRootForTest(100., 100.)
-	actions := []Action{hands, CheckAction, BetAction, FoldAction}
+	actions := []acting.Action{hands, CheckAction, BetAction, FoldAction}
 
 	singlePlayerPotContribution := Ante
 
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
-	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(PlayerA, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(PlayerB, 100.+singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(acting.PlayerA, 100.-singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(acting.PlayerB, 100.+singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, gameResult(-singlePlayerPotContribution), t)
 }
 
 func TestGamePlayEvaluationAWinsBetFold(t *testing.T) {
-	hands := DealPrivateCardsAction{&QueenHearts, &JackHearts}
+	hands := DealPrivateCardsAction{&cards.QueenHearts, &cards.JackHearts}
 	root := createRootForTest(100., 100.)
-	actions := []Action{hands, BetAction, FoldAction}
+	actions := []acting.Action{hands, BetAction, FoldAction}
 
 	singlePlayerPotContribution := Ante
 
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
-	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(PlayerB, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(PlayerA, 100.+singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(acting.PlayerB, 100.-singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(acting.PlayerA, 100.+singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, gameResult(singlePlayerPotContribution), t)
 
 }
 
 func TestGamePlayEvaluationAWinsBetCall(t *testing.T) {
-	hands := DealPrivateCardsAction{&QueenHearts, &JackHearts}
+	hands := DealPrivateCardsAction{&cards.QueenHearts, &cards.JackHearts}
 	root := createRootForTest(100., 100.)
-	actions := []Action{hands, BetAction, CallAction}
+	actions := []acting.Action{hands, BetAction, CallAction}
 
 	singlePlayerPotContribution := Ante + BetSize
 
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
-	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(PlayerB, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(PlayerA, 100.+singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(acting.PlayerB, 100.-singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(acting.PlayerA, 100.+singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, gameResult(singlePlayerPotContribution), t)
 
 }
 
 func TestGamePlayEvaluationBWinsBetCall(t *testing.T) {
-	hands := DealPrivateCardsAction{&QueenHearts, &KingHearts}
+	hands := DealPrivateCardsAction{&cards.QueenHearts, &cards.KingHearts}
 	root := createRootForTest(100., 100.)
-	actions := []Action{hands, BetAction, CallAction}
+	actions := []acting.Action{hands, BetAction, CallAction}
 
 	singlePlayerPotContribution := Ante + BetSize
 
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
-	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(PlayerA, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(PlayerB, 100.+singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(acting.PlayerA, 100.-singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(acting.PlayerB, 100.+singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, gameResult(-singlePlayerPotContribution), t)
 
 }
 
 func TestGamePlayEvaluationAWinsCheckBetCall(t *testing.T) {
-	hands := DealPrivateCardsAction{&QueenHearts, &JackHearts}
+	hands := DealPrivateCardsAction{&cards.QueenHearts, &cards.JackHearts}
 	root := createRootForTest(100., 100.)
-	actions := []Action{hands, CheckAction, BetAction, CallAction}
+	actions := []acting.Action{hands, CheckAction, BetAction, CallAction}
 
 	singlePlayerPotContribution := Ante + BetSize
 
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
-	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(PlayerB, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(PlayerA, 100.+singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(acting.PlayerB, 100.-singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(acting.PlayerA, 100.+singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, gameResult(singlePlayerPotContribution), t)
 
 }
 
 func TestGamePlayEvaluationBWinsCheckBetCall(t *testing.T) {
-	hands := DealPrivateCardsAction{&QueenHearts, &KingHearts}
+	hands := DealPrivateCardsAction{&cards.QueenHearts, &cards.KingHearts}
 	root := createRootForTest(100., 100.)
-	actions := []Action{hands, CheckAction, BetAction, CallAction}
+	actions := []acting.Action{hands, CheckAction, BetAction, CallAction}
 
 	singlePlayerPotContribution := Ante + BetSize
 
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
-	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(PlayerB, 100.+singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(PlayerA, 100.-singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(acting.PlayerB, 100.+singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(acting.PlayerA, 100.-singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, gameResult(-singlePlayerPotContribution), t)
 
 }
 
 func TestGamePlayEvaluationAWinsCheckCheck(t *testing.T) {
-	hands := DealPrivateCardsAction{&QueenHearts, &JackHearts}
+	hands := DealPrivateCardsAction{&cards.QueenHearts, &cards.JackHearts}
 	root := createRootForTest(100., 100.)
-	actions := []Action{hands, CheckAction, CheckAction}
+	actions := []acting.Action{hands, CheckAction, CheckAction}
 
 	singlePlayerPotContribution := Ante
 
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
-	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(PlayerB, 100.-singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(PlayerA, 100.+singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(acting.PlayerB, 100.-singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(acting.PlayerA, 100.+singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, gameResult(singlePlayerPotContribution), t)
 
 }
 
 func TestGamePlayEvaluationBWinsCheckCheck(t *testing.T) {
-	hands := DealPrivateCardsAction{&QueenHearts, &KingHearts}
+	hands := DealPrivateCardsAction{&cards.QueenHearts, &cards.KingHearts}
 	root := createRootForTest(100., 100.)
-	actions := []Action{hands, CheckAction, CheckAction}
+	actions := []acting.Action{hands, CheckAction, CheckAction}
 
 	singlePlayerPotContribution := Ante
 
 	testGamePlayAfterAllActions(root, actions, gameEnd(), t)
-	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(PlayerB, 100.+singlePlayerPotContribution), t)
-	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(PlayerA, 100.-singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(acting.PlayerB, 100.+singlePlayerPotContribution), t)
+	testGamePlayAfterAllActions(root, actions, stackAfterEvaluationEqualsTo(acting.PlayerA, 100.-singlePlayerPotContribution), t)
 	testGamePlayAfterAllActions(root, actions, gameResult(-singlePlayerPotContribution), t)
 
 }
 
 func TestGamePlayInformationSetForA_NoActions(t *testing.T) {
-	hands := DealPrivateCardsAction{&QueenHearts, &KingHearts}
+	hands := DealPrivateCardsAction{&cards.QueenHearts, &cards.KingHearts}
 
 	root := createRootForTest(100., 100.)
 
-	actions := []Action{hands}
-	targetInformationSet := createInformationSet(QueenHearts, actions)
+	actions := []acting.Action{hands}
+	targetInformationSet := createInformationSet(cards.QueenHearts, actions)
 	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
 }
 
 func TestGamePlayInformationSetForB_SingleCheck(t *testing.T) {
 
-	hands := DealPrivateCardsAction{&QueenHearts, &KingHearts}
+	hands := DealPrivateCardsAction{&cards.QueenHearts, &cards.KingHearts}
 	root := createRootForTest(100., 100.)
 
-	actions := []Action{hands, CheckAction}
+	actions := []acting.Action{hands, CheckAction}
 
-	targetInformationSet := createInformationSet(KingHearts, actions)
+	targetInformationSet := createInformationSet(cards.KingHearts, actions)
 	testGamePlayAfterAllActions(root, actions, lastInformationSet(targetInformationSet), t)
 }
 
 func testGamePlayAfterEveryAction(node *KuhnGameState, actionsTests []ActionTestsTriple, t *testing.T) {
-	nodes := []GameState{node}
+	nodes := []games.GameState{node}
 	for i := range actionsTests {
 
 		if !actionsTests[i].preTest(nodes[i].(*KuhnGameState)) {
@@ -310,8 +313,8 @@ func testGamePlayAfterEveryAction(node *KuhnGameState, actionsTests []ActionTest
 	}
 }
 
-func testGamePlayAfterAllActions(node *KuhnGameState, actions []Action, test func(state *KuhnGameState) bool, t *testing.T) {
-	nodes := []GameState{node}
+func testGamePlayAfterAllActions(node *KuhnGameState, actions []acting.Action, test func(state *KuhnGameState) bool, t *testing.T) {
+	nodes := []games.GameState{node}
 	for i := range actions {
 		child := nodes[i].Act(actions[i])
 		nodes = append(nodes, child)
@@ -321,13 +324,13 @@ func testGamePlayAfterAllActions(node *KuhnGameState, actions []Action, test fun
 	}
 }
 
-func createRootForTest(playerAStack float32, playerBStack float32) *KuhnGameState {
-	playerA := &Player{Id: PlayerA, Actions: nil, Card: nil, Stack: playerAStack}
-	playerB := &Player{Id: PlayerB, Actions: nil, Card: nil, Stack: playerBStack}
-	return Root(playerA, playerB)
+func createRootForTest(PlayerAStack float32, PlayerBStack float32) *KuhnGameState {
+	PlayerA := &Player{Id: acting.PlayerA, Actions: nil, Card: nil, Stack: PlayerAStack}
+	PlayerB := &Player{Id: acting.PlayerB, Actions: nil, Card: nil, Stack: PlayerBStack}
+	return Root(PlayerA, PlayerB)
 }
 
-func roundCheck(expectedRound Round) func(node *KuhnGameState) bool {
+func roundCheck(expectedRound rounds.PokerRound) func(node *KuhnGameState) bool {
 	return func(node *KuhnGameState) bool { return node.round == expectedRound }
 }
 
@@ -342,19 +345,19 @@ func gameResult(result float32) func(state *KuhnGameState) bool {
 	}
 }
 
-func actorToMove(actorId ActorID) func(state *KuhnGameState) bool {
+func actorToMove(actorId acting.ActorID) func(state *KuhnGameState) bool {
 	return func(state *KuhnGameState) bool {
 		return state.nextToMove == actorId
 	}
 }
 
-func stackEqualsTo(player ActorID, stack float32) func(state *KuhnGameState) bool {
+func stackEqualsTo(player acting.ActorID, stack float32) func(state *KuhnGameState) bool {
 	return func(state *KuhnGameState) bool {
 		return math.Abs(float64(state.actors[player].(*Player).Stack-stack)) < 1e-9
 	}
 }
 
-func stackAfterEvaluationEqualsTo(player ActorID, stack float32) func(state *KuhnGameState) bool {
+func stackAfterEvaluationEqualsTo(player acting.ActorID, stack float32) func(state *KuhnGameState) bool {
 	return func(state *KuhnGameState) bool {
 		state.Evaluate()
 		return math.Abs(float64(state.actors[player].(*Player).Stack-stack)) < 1e-9
@@ -376,7 +379,7 @@ func noTest() func(state *KuhnGameState) bool {
 func onlyCheckAvailable() func(state *KuhnGameState) bool {
 	return func(state *KuhnGameState) bool {
 		Actions := state.Actions()
-		if len(Actions) == 1 && Actions[0].Name() == Check {
+		if len(Actions) == 1 && Actions[0].Name() == acting.Check {
 			return true
 		}
 		return false
@@ -385,39 +388,44 @@ func onlyCheckAvailable() func(state *KuhnGameState) bool {
 func checkAndBetAvailable() func(state *KuhnGameState) bool {
 	return func(state *KuhnGameState) bool {
 		Actions := state.Actions()
-		if len(Actions) == 2 && Actions[0].Name() == Check && Actions[1].Name() == Bet {
+		if len(Actions) == 2 && Actions[0].Name() == acting.Check && Actions[1].Name() == acting.Bet {
 			return true
 		}
 		return false
 	}
 }
 
-func privateCards(playerACard Card, playerBCard Card) func(state *KuhnGameState) bool {
+func privateCards(PlayerACard cards.Card, PlayerBCard cards.Card) func(state *KuhnGameState) bool {
 	return func(state *KuhnGameState) bool {
-		return *(state.actors[PlayerA].(*Player).Card) == playerACard && *(state.actors[PlayerB].(*Player).Card) == playerBCard
+		return *(state.actors[acting.PlayerA].(*Player).Card) == PlayerACard && *(state.actors[acting.PlayerB].(*Player).Card) == PlayerBCard
 	}
 }
 
-func lastInformationSet(informationSet [InformationSetSize]bool) func(state *KuhnGameState) bool {
+func lastInformationSet(informationSet [InformationSetSizeBytes]byte) func(state *KuhnGameState) bool {
 	return func(state *KuhnGameState) bool {
 		currentInformationSet := state.InformationSet()
 		return currentInformationSet == informationSet
 	}
 }
 
-func createInformationSet(card Card, actions []Action) [InformationSetSize]bool {
+func createInformationSet(card cards.Card, actions []acting.Action) [InformationSetSizeBytes]byte {
 
-	informationSet := [InformationSetSize]bool{
+	informationSetBool := [InformationSetSize]bool{
 		card.Symbol[0], card.Symbol[1], card.Symbol[2], card.Symbol[3],
 		card.Suit[0], card.Suit[1], card.Suit[2],
 	}
-	var currentAction Action
+	var currentAction acting.Action
 	for i := 7; len(actions) > 0; i += 3 {
 		// somehow tricky pop..
 		currentAction, actions = actions[len(actions)-1], actions[:len(actions)-1]
-		informationSet[i] = currentAction.Name()[0]
-		informationSet[i+1] = currentAction.Name()[1]
-		informationSet[i+2] = currentAction.Name()[2]
+		informationSetBool[i] = currentAction.Name()[0]
+		informationSetBool[i+1] = currentAction.Name()[1]
+		informationSetBool[i+2] = currentAction.Name()[2]
+	}
+	informationSet := [InformationSetSizeBytes]byte{}
+
+	for i := 0; i < InformationSetSizeBytes; i++ {
+		informationSet[i] = acting.CreateByte(informationSetBool[(i * 8):((i + 1) * 8)])
 	}
 
 	return informationSet

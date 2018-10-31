@@ -2,21 +2,30 @@ package kuhn
 
 import (
 	"errors"
-	. "github.com/int8/gopoker"
+	"github.com/int8/gopoker/acting"
+	"github.com/int8/gopoker/cards"
+	"github.com/int8/gopoker/games"
+	"github.com/int8/gopoker/rounds"
+	"github.com/int8/gopoker/table"
 )
+
+const BetSize float32 = 1.0
+const Ante float32 = 1.0
+const InformationSetSize = 24
+const InformationSetSizeBytes = 3
 
 // KuhnGameState - Kuhn Poker Game State
 type KuhnGameState struct {
-	round         Round
+	round         rounds.PokerRound
 	parent        *KuhnGameState
-	causingAction Action
-	table         *Table
-	actors        map[ActorID]Actor
-	nextToMove    ActorID
+	causingAction acting.Action
+	table         *table.PokerTable
+	actors        map[acting.ActorID]acting.Actor
+	nextToMove    acting.ActorID
 	terminal      bool
 }
 
-func (state *KuhnGameState) Act(action Action) GameState {
+func (state *KuhnGameState) Act(action acting.Action) games.GameState {
 	switch state.actors[state.nextToMove].(type) {
 	case *Chance:
 		return state.actAsChance(action)
@@ -26,7 +35,7 @@ func (state *KuhnGameState) Act(action Action) GameState {
 	return nil
 }
 
-func (state *KuhnGameState) Actions() []Action {
+func (state *KuhnGameState) Actions() []acting.Action {
 
 	switch state.actors[state.nextToMove].(type) {
 	case *Chance:
@@ -38,18 +47,18 @@ func (state *KuhnGameState) Actions() []Action {
 }
 
 func (state *KuhnGameState) IsChance() bool {
-	return state.nextToMove == ChanceId
+	return state.nextToMove == acting.ChanceId
 }
 
 func (state *KuhnGameState) IsTerminal() bool {
 	return state.terminal
 }
 
-func (state *KuhnGameState) Parent() GameState {
+func (state *KuhnGameState) Parent() games.GameState {
 	return state.parent
 }
 
-func (state *KuhnGameState) CurrentActor() Actor {
+func (state *KuhnGameState) CurrentActor() acting.Actor {
 	return state.actors[state.nextToMove]
 }
 
@@ -58,7 +67,7 @@ func (state *KuhnGameState) Evaluate() float32 {
 	currentActor := state.playerActor(state.CurrentActor().GetID())
 	currentActorOpponent := state.playerActor(-state.CurrentActor().GetID())
 	if state.IsTerminal() {
-		if state.causingAction.Name() == Fold {
+		if state.causingAction.Name() == acting.Fold {
 			currentActor.UpdateStack(currentActor.Stack + state.table.Pot)
 			return float32(currentActor.GetID()) * (state.table.Pot / 2)
 		}
@@ -78,42 +87,47 @@ func (state *KuhnGameState) Evaluate() float32 {
 	return 0.0
 }
 
-func (state *KuhnGameState) InformationSet() InformationSet {
+func (state *KuhnGameState) InformationSet() games.InformationSet {
 
 	privateCardSymbol := state.actors[state.nextToMove].(*Player).Card.Symbol
 	privateCardSuit := state.actors[state.nextToMove].(*Player).Card.Suit
+	informationSet := [InformationSetSizeBytes]byte{}
 
-	informationSet := [InformationSetSize]bool{
+	informationSetBool := [InformationSetSize]bool{
 		privateCardSymbol[0], privateCardSymbol[1], privateCardSymbol[2], privateCardSymbol[3],
 		privateCardSuit[0], privateCardSuit[1], privateCardSuit[2],
 	}
 	currentState := state
-	for i := 7; currentState.round != Start; i += 3 {
+	for i := 7; currentState.round != rounds.Start; i += 3 {
 		actionName := currentState.causingAction.Name()
-		informationSet[i] = actionName[0]
-		informationSet[i+1] = actionName[1]
-		informationSet[i+2] = actionName[2]
+		informationSetBool[i] = actionName[0]
+		informationSetBool[i+1] = actionName[1]
+		informationSetBool[i+2] = actionName[2]
 		currentState = currentState.parent
 		if currentState == nil {
 			break
 		}
 	}
-	return InformationSet(informationSet)
+	for i := 0; i < InformationSetSizeBytes; i++ {
+		informationSet[i] = acting.CreateByte(informationSetBool[(i * 8):((i + 1) * 8)])
+	}
+
+	return games.InformationSet(informationSet)
 }
 
-func (state *KuhnGameState) stack(actor ActorID) float32 {
+func (state *KuhnGameState) stack(actor acting.ActorID) float32 {
 	return state.actors[actor].(*Player).Stack
 }
 
-func (state *KuhnGameState) actAsChance(action Action) GameState {
+func (state *KuhnGameState) actAsChance(action acting.Action) games.GameState {
 	var child *KuhnGameState
-	if action.Name() == DealPrivateCards {
+	if action.Name() == acting.DealPrivateCards {
 		child = state.dealPrivateCards(action.(DealPrivateCardsAction).CardA, action.(DealPrivateCardsAction).CardB)
 	}
 	return child
 }
 
-func (state *KuhnGameState) actAsPlayer(action Action) GameState {
+func (state *KuhnGameState) actAsPlayer(action acting.Action) games.GameState {
 
 	var child *KuhnGameState
 
@@ -123,16 +137,16 @@ func (state *KuhnGameState) actAsPlayer(action Action) GameState {
 	actor := state.CurrentActor()
 
 	defer func() {
-		if action.Name() == Call || action.Name() == Bet {
+		if action.Name() == acting.Call || action.Name() == acting.Bet {
 			child.playerActor(actor.GetID()).PlaceBet(child.table, BetSize)
 		}
-		if action.Name() == Fold {
+		if action.Name() == acting.Fold {
 			//opponent of folding player can now take his bet back
 			child.actors[state.CurrentActor().(*Player).Opponent()].(*Player).PlaceBet(child.table, -BetSize)
 		}
 	}()
 
-	if action.Name() == Fold || action.Name() == Call || (action.Name() == Check && state.causingAction.Name() == Check) {
+	if action.Name() == acting.Fold || action.Name() == acting.Call || (action.Name() == acting.Check && state.causingAction.Name() == acting.Check) {
 		child = createChild(state, state.round, action, state.CurrentActor().(*Player).Opponent(), true)
 		return child
 	}
@@ -146,40 +160,40 @@ func (state *KuhnGameState) betSize() float32 {
 }
 
 func Root(playerA *Player, playerB *Player) *KuhnGameState {
-	chance := &Chance{id: ChanceId, deck: CreateKuhnDeck(true)}
+	chance := &Chance{id: acting.ChanceId, deck: CreateKuhnDeck()}
 
-	actors := map[ActorID]Actor{PlayerA: playerA, PlayerB: playerB, ChanceId: chance}
-	table := &Table{Pot: 0, Cards: []Card{}}
+	actors := map[acting.ActorID]acting.Actor{acting.PlayerA: playerA, acting.PlayerB: playerB, acting.ChanceId: chance}
+	table := &table.PokerTable{Pot: 0, Cards: []cards.Card{}}
 
-	return &KuhnGameState{round: Start, table: table,
-		actors: actors, nextToMove: ChanceId, causingAction: nil}
+	return &KuhnGameState{round: rounds.Start, table: table,
+		actors: actors, nextToMove: acting.ChanceId, causingAction: nil}
 }
 
-func createChild(blueprint *KuhnGameState, round Round, Action Action, nextToMove ActorID, terminal bool) *KuhnGameState {
+func createChild(blueprint *KuhnGameState, round rounds.PokerRound, Action acting.Action, nextToMove acting.ActorID, terminal bool) *KuhnGameState {
 	child := KuhnGameState{round: round,
 		parent: blueprint, causingAction: Action, terminal: terminal,
 		table: blueprint.table.Clone(), actors: cloneActorsMap(blueprint.actors), nextToMove: nextToMove}
 	return &child
 }
 
-func (state *KuhnGameState) dealPrivateCards(cardA *Card, cardB *Card) *KuhnGameState {
+func (state *KuhnGameState) dealPrivateCards(cardA *cards.Card, cardB *cards.Card) *KuhnGameState {
 
-	child := createChild(state, state.round.NextRound(), DealPrivateCardsAction{cardA, cardB}, PlayerA, false)
+	child := createChild(state, state.round.NextRound(), DealPrivateCardsAction{cardA, cardB}, acting.PlayerA, false)
 	// important to deal using child deck / not current chance deck
-	child.actors[PlayerA].(*Player).PlaceBet(child.table, Ante)
-	child.actors[PlayerB].(*Player).PlaceBet(child.table, Ante)
-	child.actors[PlayerA].(*Player).CollectPrivateCard(cardA)
-	child.actors[PlayerB].(*Player).CollectPrivateCard(cardB)
-	child.actors[ChanceId].(*Chance).deck.RemoveCard(cardA)
-	child.actors[ChanceId].(*Chance).deck.RemoveCard(cardB)
+	child.actors[acting.PlayerA].(*Player).PlaceBet(child.table, Ante)
+	child.actors[acting.PlayerB].(*Player).PlaceBet(child.table, Ante)
+	child.actors[acting.PlayerA].(*Player).CollectPrivateCard(cardA)
+	child.actors[acting.PlayerB].(*Player).CollectPrivateCard(cardB)
+	child.actors[acting.ChanceId].(*Chance).deck.RemoveCard(cardA)
+	child.actors[acting.ChanceId].(*Chance).deck.RemoveCard(cardB)
 
 	return child
 }
 
-func (state *KuhnGameState) chanceActions(chance *Chance) []Action {
-	if state.round == Start {
+func (state *KuhnGameState) chanceActions(chance *Chance) []acting.Action {
+	if state.round == rounds.Start {
 		deckSize := int(chance.deck.CardsLeft())
-		actions := make([]Action, deckSize*(deckSize-1))
+		actions := make([]acting.Action, deckSize*(deckSize-1))
 		i := 0
 		remainingCards := chance.deck.RemainingCards()
 		for _, cardA := range remainingCards {
@@ -197,10 +211,10 @@ func (state *KuhnGameState) chanceActions(chance *Chance) []Action {
 	return nil
 }
 
-func (state *KuhnGameState) playerActions(player *Player) []Action {
+func (state *KuhnGameState) playerActions(player *Player) []acting.Action {
 
-	if state.causingAction.Name() == Fold {
-		player.Actions = []Action{}
+	if state.causingAction.Name() == acting.Fold {
+		player.Actions = []acting.Action{}
 		return player.Actions
 	}
 
@@ -209,28 +223,28 @@ func (state *KuhnGameState) playerActions(player *Player) []Action {
 	allowedToBet := (player.Stack >= betSize) && (opponentStack >= betSize)
 
 	// whenever betting round is over (CALL OR CHECK->CHECK)
-	bettingRoundEnded := state.causingAction.Name() == Call || (state.causingAction.Name() == Check && state.parent.causingAction.Name() == Check)
+	bettingRoundEnded := state.causingAction.Name() == acting.Call || (state.causingAction.Name() == acting.Check && state.parent.causingAction.Name() == acting.Check)
 	if bettingRoundEnded {
-		player.Actions = []Action{}
+		player.Actions = []acting.Action{}
 		return player.Actions
 	}
 
 	// single check implies BET or CHECK
-	if state.causingAction.Name() == Check && state.parent.causingAction.Name() != Check {
-		player.Actions = []Action{CheckAction}
+	if state.causingAction.Name() == acting.Check && state.parent.causingAction.Name() != acting.Check {
+		player.Actions = []acting.Action{CheckAction}
 		if allowedToBet {
 			player.Actions = append(player.Actions, BetAction)
 		}
 		return player.Actions
 	}
 
-	if state.causingAction.Name() == Bet {
-		player.Actions = []Action{CallAction, FoldAction}
+	if state.causingAction.Name() == acting.Bet {
+		player.Actions = []acting.Action{CallAction, FoldAction}
 		return player.Actions
 	}
 
-	if state.causingAction.Name() == DealPrivateCards || state.causingAction.Name() == DealPublicCards {
-		player.Actions = []Action{CheckAction}
+	if state.causingAction.Name() == acting.DealPrivateCards || state.causingAction.Name() == acting.DealPublicCards {
+		player.Actions = []acting.Action{CheckAction}
 		if allowedToBet {
 			player.Actions = append(player.Actions, BetAction)
 		}
@@ -239,6 +253,6 @@ func (state *KuhnGameState) playerActions(player *Player) []Action {
 	panic(errors.New("Code not reachable."))
 }
 
-func (state *KuhnGameState) playerActor(id ActorID) *Player {
+func (state *KuhnGameState) playerActor(id acting.ActorID) *Player {
 	return state.actors[id].(*Player)
 }

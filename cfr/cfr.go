@@ -1,29 +1,30 @@
 package cfr
 
 import (
-	. "github.com/int8/gopoker"
+	"github.com/int8/gopoker/acting"
+	"github.com/int8/gopoker/games"
 	"math/rand"
 )
 
-type StrategyMap map[InformationSet]map[ActionName]float32
+type StrategyMap map[games.InformationSet]map[acting.ActionName]float32
 
 type CfrComputingRoutine struct {
 	sigmaSum   StrategyMap
 	sigma      StrategyMap
 	regretsSum StrategyMap
-	root       GameState
+	root       games.GameState
 }
 
-func (routine *CfrComputingRoutine) cumulateCfrRegret(infSet InformationSet, action ActionName, value float32) {
+func (routine *CfrComputingRoutine) cumulateCfrRegret(infSet games.InformationSet, action acting.ActionName, value float32) {
 	if _, ok := routine.regretsSum[infSet]; !ok {
-		routine.regretsSum[infSet] = map[ActionName]float32{}
+		routine.regretsSum[infSet] = map[acting.ActionName]float32{}
 	}
 	routine.regretsSum[infSet][action] += value
 }
 
-func (routine *CfrComputingRoutine) cumulateSigma(infSet InformationSet, action ActionName, value float32) {
+func (routine *CfrComputingRoutine) cumulateSigma(infSet games.InformationSet, action acting.ActionName, value float32) {
 	if _, ok := routine.sigmaSum[infSet]; !ok {
-		routine.sigmaSum[infSet] = map[ActionName]float32{}
+		routine.sigmaSum[infSet] = map[acting.ActionName]float32{}
 	}
 	routine.sigmaSum[infSet][action] += value
 }
@@ -38,9 +39,9 @@ func (routine *CfrComputingRoutine) ComputeNashEquilibriumViaCFR(iterations int,
 	return routine.computeNashEquilibriumBasedOnStrategySum()
 }
 
-func (routine *CfrComputingRoutine) updateSigma(infSet InformationSet) {
+func (routine *CfrComputingRoutine) updateSigma(infSet games.InformationSet) {
 	if _, ok := routine.sigma[infSet]; !ok {
-		routine.sigma[infSet] = map[ActionName]float32{}
+		routine.sigma[infSet] = map[acting.ActionName]float32{}
 	}
 
 	regretSum := float32(0.)
@@ -56,22 +57,21 @@ func (routine *CfrComputingRoutine) updateSigma(infSet InformationSet) {
 	}
 }
 
-func (routine *CfrComputingRoutine) actionProbability(infSet InformationSet, action ActionName, nrOfActions int) float32 {
+func (routine *CfrComputingRoutine) actionProbability(infSet games.InformationSet, action acting.ActionName, nrOfActions int) float32 {
 	if _, ok := routine.sigma[infSet]; !ok {
 		return 1. / float32(nrOfActions)
 	}
 	return routine.sigma[infSet][action]
 }
 
-//TODO: replace recursive approach with stack based approach - should run much faster (?)
-func (routine *CfrComputingRoutine) cfrUtilityRecursive(state GameState, reachA float32, reachB float32) float32 {
+func (routine *CfrComputingRoutine) cfrUtilityRecursive(state games.GameState, reachA float32, reachB float32) float32 {
 
-	childrenStateUtilities := map[ActionName]float32{}
+	childrenStateUtilities := map[acting.ActionName]float32{}
 	if state.IsTerminal() {
 		return state.Evaluate()
 	}
 
-	if state.CurrentActor().GetID() == ChanceId {
+	if state.CurrentActor().GetID() == acting.ChanceId {
 		actions := state.Actions()
 		action := actions[rand.Intn(len(actions))]
 		return routine.cfrUtilityRecursive(state.Act(action), reachA, reachB)
@@ -85,7 +85,7 @@ func (routine *CfrComputingRoutine) cfrUtilityRecursive(state GameState, reachA 
 		childReachB := reachB
 		prob := routine.actionProbability(infSet, action.Name(), len(actions))
 
-		if state.CurrentActor().GetID() == PlayerA {
+		if state.CurrentActor().GetID() == acting.PlayerA {
 			childReachA *= prob
 		} else {
 			childReachB *= prob
@@ -98,7 +98,7 @@ func (routine *CfrComputingRoutine) cfrUtilityRecursive(state GameState, reachA 
 	}
 
 	var cfrReach, reach float32
-	if state.CurrentActor().GetID() == PlayerA {
+	if state.CurrentActor().GetID() == acting.PlayerA {
 		cfrReach, reach = reachB, reachA
 	} else {
 		cfrReach, reach = reachA, reachB
@@ -123,7 +123,7 @@ func (routine *CfrComputingRoutine) cfrUtilityRecursive(state GameState, reachA 
 func (routine *CfrComputingRoutine) computeNashEquilibriumBasedOnStrategySum() StrategyMap {
 	nashEquilibrium := StrategyMap{}
 	for infSet := range routine.sigmaSum {
-		nashEquilibrium[infSet] = map[ActionName]float32{}
+		nashEquilibrium[infSet] = map[acting.ActionName]float32{}
 		infSetSigmaSum := float32(0.0)
 		for action := range routine.sigmaSum[infSet] {
 			infSetSigmaSum += routine.sigmaSum[infSet][action]
@@ -136,13 +136,13 @@ func (routine *CfrComputingRoutine) computeNashEquilibriumBasedOnStrategySum() S
 	return nashEquilibrium
 }
 
-func computeUtility(state GameState, sigma StrategyMap) float32 {
+func computeUtility(state games.GameState, sigma StrategyMap) float32 {
 
 	if state.IsTerminal() {
 		return state.Evaluate()
 	}
 
-	if state.CurrentActor().GetID() == ChanceId {
+	if state.CurrentActor().GetID() == acting.ChanceId {
 		actions := state.Actions()
 		eval := float32(0.0)
 		for _, action := range actions {
