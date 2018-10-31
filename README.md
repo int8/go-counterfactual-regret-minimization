@@ -41,13 +41,9 @@ import (
 	"github.com/int8/go-counterfactual-regret-minimization/games/rhodeisland"
 )
 
-func rhodeIslandRoot(playerAStack float32, playerBStack float32) *rhodeisland.RIGameState {
-	playerA := &rhodeisland.Player{Id: acting.PlayerA, Actions: nil, Card: nil, Stack: playerAStack}
-	playerB := &rhodeisland.Player{Id: acting.PlayerB, Actions: nil, Card: nil, Stack: playerBStack}
-	return rhodeisland.Root(playerA, playerB, cards.CreateLimitedDeck(cards.C10, true))
-}
-
-root := rhodeIslandRoot(1000., 1000.)
+playerA := &rhodeisland.Player{Id: acting.PlayerA, Actions: nil, Card: nil, Stack: 1000.}
+playerB := &rhodeisland.Player{Id: acting.PlayerB, Actions: nil, Card: nil, Stack: 1000.}
+root := rhodeisland.Root(playerA, playerB, cards.CreateLimitedDeck(cards.C10, true))
 routine := ComputingRoutine{root: root, regretsSum: StrategyMap{}, sigma: StrategyMap{}, sigmaSum: StrategyMap{}}
 nashEquilibrium := routine.ComputeNashEquilibriumViaCFR(10000)
 ```
