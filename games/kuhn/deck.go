@@ -10,7 +10,7 @@ type KuhnDeck struct {
 	Cards map[*cards.Card]bool
 }
 
-func CreateKuhnDeck(shuffleInitially bool) *KuhnDeck {
+func CreateKuhnDeck() *KuhnDeck {
 
 	deck := *new(KuhnDeck)
 	deck.Cards = make(map[*cards.Card]bool, 3)

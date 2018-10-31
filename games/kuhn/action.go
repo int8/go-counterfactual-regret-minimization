@@ -1,13 +1,15 @@
 package kuhn
 
-import . "github.com/int8/gopoker"
+import (
+	"github.com/int8/gopoker/acting"
+)
 import "github.com/int8/gopoker/cards"
 
 type PlayerAction struct {
-	name ActionName
+	name acting.ActionName
 }
 
-func (a PlayerAction) Name() ActionName {
+func (a PlayerAction) Name() acting.ActionName {
 	return a.name
 }
 
@@ -16,6 +18,13 @@ type DealPrivateCardsAction struct {
 	CardB *cards.Card
 }
 
-func (a DealPrivateCardsAction) Name() ActionName {
-	return DealPrivateCards
+func (a DealPrivateCardsAction) Name() acting.ActionName {
+	return acting.DealPrivateCards
 }
+
+var (
+	CheckAction = PlayerAction{acting.Check}
+	BetAction   = PlayerAction{acting.Bet}
+	CallAction  = PlayerAction{acting.Call}
+	FoldAction  = PlayerAction{acting.Fold}
+)

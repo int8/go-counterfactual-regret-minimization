@@ -1,4 +1,4 @@
-package gopoker
+package acting
 
 func to3BinArray(number int) [3]bool {
 	return [3]bool{number&1 > 0, number&2 > 0, number&4 > 0}

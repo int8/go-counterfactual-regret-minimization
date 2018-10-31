@@ -1,29 +1,38 @@
 package rhodeisland
 
-import . "github.com/int8/gopoker"
+import (
+	"github.com/int8/gopoker/acting"
+	"github.com/int8/gopoker/cards"
+)
 
 type PlayerAction struct {
-	name ActionName
+	name acting.ActionName
 }
 
-func (a PlayerAction) Name() ActionName {
+var CheckAction = PlayerAction{acting.Check}
+var BetAction = PlayerAction{acting.Bet}
+var CallAction = PlayerAction{acting.Call}
+var RaiseAction = PlayerAction{acting.Raise}
+var FoldAction = PlayerAction{acting.Fold}
+
+func (a PlayerAction) Name() acting.ActionName {
 	return a.name
 }
 
 type DealPrivateCardsAction struct {
-	CardA *Card
-	CardB *Card
+	CardA *cards.Card
+	CardB *cards.Card
 }
 
-func (a DealPrivateCardsAction) Name() ActionName {
-	return DealPrivateCards
+func (a DealPrivateCardsAction) Name() acting.ActionName {
+	return acting.DealPrivateCards
 }
 
 type DealPublicCardAction struct {
-	Card *Card
+	Card *cards.Card
 }
 
-func (a DealPublicCardAction) Name() ActionName {
-	return DealPublicCards
+func (a DealPublicCardAction) Name() acting.ActionName {
+	return acting.DealPublicCards
 
 }

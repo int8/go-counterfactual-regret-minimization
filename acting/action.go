@@ -1,19 +1,10 @@
-package gopoker
+package acting
 
-const (
-	PlayerA  ActorID = 1
-	PlayerB          = -PlayerA
-	ChanceId         = 0
-)
+type ActionName [3]bool
 
-const (
-	Start Round = iota
-	PreFlop
-	Flop
-	Turn
-	River
-	End
-)
+type Action interface {
+	Name() ActionName
+}
 
 var (
 	NoAction         ActionName = to3BinArray(0)
@@ -25,3 +16,23 @@ var (
 	Call             ActionName = to3BinArray(6)
 	Raise            ActionName = to3BinArray(7)
 )
+
+func (m ActionName) String() string {
+	switch m {
+	case Check:
+		return "Ch"
+	case Bet:
+		return "B"
+	case Call:
+		return "C"
+	case Fold:
+		return "F"
+	case Raise:
+		return "R"
+	case DealPrivateCards:
+		return "DPrv"
+	case DealPublicCards:
+		return "DPub"
+	}
+	return "?"
+}

@@ -2,21 +2,35 @@ package rhodeisland
 
 import (
 	"errors"
-	. "github.com/int8/gopoker"
+	"github.com/int8/gopoker/acting"
+	"github.com/int8/gopoker/cards"
+	"github.com/int8/gopoker/games"
+	"github.com/int8/gopoker/rounds"
+	"github.com/int8/gopoker/table"
 )
+
+const PreFlopBetSize float32 = 10.
+const PostFlopBetSize float32 = 20.
+
+const InformationSetSize = 8 * 8
+const InformationSetSizeBytes = 8
+
+var MaxRaises = 3
+
+const Ante float32 = 5.0
 
 // RIGameState - RhodeIslandGameState
 type RIGameState struct {
-	round         Round
+	round         rounds.PokerRound
 	parent        *RIGameState
-	causingAction Action
-	table         *Table
-	actors        map[ActorID]Actor
-	nextToMove    ActorID
+	causingAction acting.Action
+	table         *table.PokerTable
+	actors        map[acting.ActorID]acting.Actor
+	nextToMove    acting.ActorID
 	terminal      bool
 }
 
-func (state *RIGameState) Act(action Action) GameState {
+func (state *RIGameState) Act(action acting.Action) games.GameState {
 	switch state.actors[state.nextToMove].(type) {
 	case *Chance:
 		return state.actAsChance(action)
@@ -26,7 +40,7 @@ func (state *RIGameState) Act(action Action) GameState {
 	return nil
 }
 
-func (state *RIGameState) Actions() []Action {
+func (state *RIGameState) Actions() []acting.Action {
 
 	switch state.actors[state.nextToMove].(type) {
 	case *Chance:
@@ -38,18 +52,18 @@ func (state *RIGameState) Actions() []Action {
 }
 
 func (state *RIGameState) IsChance() bool {
-	return state.nextToMove == ChanceId
+	return state.nextToMove == acting.ChanceId
 }
 
 func (state *RIGameState) IsTerminal() bool {
 	return state.terminal
 }
 
-func (state *RIGameState) Parent() GameState {
+func (state *RIGameState) Parent() games.GameState {
 	return state.parent
 }
 
-func (state *RIGameState) CurrentActor() Actor {
+func (state *RIGameState) CurrentActor() acting.Actor {
 	return state.actors[state.nextToMove]
 }
 
@@ -57,7 +71,7 @@ func (state *RIGameState) Evaluate() float32 {
 	actor := state.playerActor(state.CurrentActor().GetID())
 	opponent := state.playerActor(-state.CurrentActor().GetID())
 	if state.IsTerminal() {
-		if state.causingAction.Name() == Fold {
+		if state.causingAction.Name() == acting.Fold {
 			actor.UpdateStack(actor.Stack + state.table.Pot)
 			return float32(actor.GetID()) * state.table.Pot / 2
 		}
@@ -82,17 +96,17 @@ func (state *RIGameState) Evaluate() float32 {
 	panic(errors.New("RIGameState is not terminal"))
 }
 
-func (state *RIGameState) InformationSet() InformationSet {
+func (state *RIGameState) InformationSet() games.InformationSet {
 
-	privateCard := Card{state.playerActor(state.nextToMove).Card.Symbol, state.playerActor(state.nextToMove).Card.Suit}
-	flopCard, turnCard := NoCard, NoCard
+	privateCard := cards.Card{Symbol: state.playerActor(state.nextToMove).Card.Symbol, Suit: state.playerActor(state.nextToMove).Card.Suit}
+	flopCard, turnCard := cards.NoCard, cards.NoCard
 
 	if len(state.table.Cards) > 0 {
-		flopCard = Card{state.table.Cards[0].Symbol, state.table.Cards[0].Suit}
+		flopCard = cards.Card{Symbol: state.table.Cards[0].Symbol, Suit: state.table.Cards[0].Suit}
 	}
 
 	if len(state.table.Cards) > 1 {
-		turnCard = Card{state.table.Cards[1].Symbol, state.table.Cards[1].Suit}
+		turnCard = cards.Card{Symbol: state.table.Cards[1].Symbol, Suit: state.table.Cards[1].Suit}
 	}
 	informationSet := [InformationSetSizeBytes]byte{}
 
@@ -106,7 +120,7 @@ func (state *RIGameState) InformationSet() InformationSet {
 	}
 
 	currentState := state
-	for i := 21; currentState.round != Start; i += 3 {
+	for i := 21; currentState.round != rounds.Start; i += 3 {
 		actionName := currentState.causingAction.Name()
 		infSetBool[i] = actionName[0]
 		infSetBool[i+1] = actionName[1]
@@ -119,29 +133,29 @@ func (state *RIGameState) InformationSet() InformationSet {
 	}
 
 	for i := 0; i < InformationSetSizeBytes; i++ {
-		informationSet[i] = CreateByte(infSetBool[(i * 8):((i + 1) * 8)])
+		informationSet[i] = acting.CreateByte(infSetBool[(i * 8):((i + 1) * 8)])
 	}
 
-	return InformationSet(informationSet)
+	return games.InformationSet(informationSet)
 }
 
-func (state *RIGameState) stack(id ActorID) float32 {
+func (state *RIGameState) stack(id acting.ActorID) float32 {
 	return state.actors[id].(*Player).Stack
 }
 
-func (state *RIGameState) actAsChance(action Action) GameState {
+func (state *RIGameState) actAsChance(action acting.Action) games.GameState {
 	var c *RIGameState
-	if action.Name() == DealPublicCards {
+	if action.Name() == acting.DealPublicCards {
 		c = state.dealPublicCard(action.(DealPublicCardAction).Card)
 	}
 
-	if action.Name() == DealPrivateCards {
+	if action.Name() == acting.DealPrivateCards {
 		c = state.dealPrivateCards(action.(DealPrivateCardsAction).CardA, action.(DealPrivateCardsAction).CardB)
 	}
 	return c
 }
 
-func (state *RIGameState) actAsPlayer(action Action) GameState {
+func (state *RIGameState) actAsPlayer(action acting.Action) games.GameState {
 
 	var c *RIGameState
 
@@ -152,24 +166,24 @@ func (state *RIGameState) actAsPlayer(action Action) GameState {
 	betSize := state.betSize()
 
 	defer func() {
-		if action.Name() == Call || action.Name() == Bet {
+		if action.Name() == acting.Call || action.Name() == acting.Bet {
 			c.playerActor(actor.GetID()).PlaceBet(c.table, betSize)
 		}
-		if action.Name() == Raise {
+		if action.Name() == acting.Raise {
 			c.playerActor(actor.GetID()).PlaceBet(c.table, 2*betSize)
 		}
-		if action.Name() == Fold {
+		if action.Name() == acting.Fold {
 			c.playerActor(-actor.GetID()).PlaceBet(c.table, -betSize)
 		}
 	}()
 
-	if action.Name() == Fold || (state.round == Turn && (action.Name() == Call || (action.Name() == Check && state.causingAction.Name() == Check))) {
+	if action.Name() == acting.Fold || (state.round == rounds.Turn && (action.Name() == acting.Call || (action.Name() == acting.Check && state.causingAction.Name() == acting.Check))) {
 		c = createChild(state, state.round, action, actor.Opponent(), true)
 		return c
 	}
 
-	if action.Name() == Call || (action.Name() == Check && state.causingAction.Name() == Check) {
-		c = createChild(state, state.round, action, ChanceId, false)
+	if action.Name() == acting.Call || (action.Name() == acting.Check && state.causingAction.Name() == acting.Check) {
+		c = createChild(state, state.round, action, acting.ChanceId, false)
 		return c
 	}
 
@@ -179,55 +193,55 @@ func (state *RIGameState) actAsPlayer(action Action) GameState {
 }
 
 func (state *RIGameState) betSize() float32 {
-	if state.round < Flop {
+	if state.round < rounds.Flop {
 		return PreFlopBetSize
 	}
 	return PostFlopBetSize
 }
 
-func Root(playerA *Player, playerB *Player, deck Deck) *RIGameState {
-	chance := &Chance{id: ChanceId, deck: deck}
+func Root(playerA *Player, playerB *Player, deck cards.Deck) *RIGameState {
+	chance := &Chance{id: acting.ChanceId, deck: deck}
 
-	actors := map[ActorID]Actor{PlayerA: playerA, PlayerB: playerB, ChanceId: chance}
-	table := &Table{Pot: 0, Cards: []Card{}}
-	return &RIGameState{round: Start, table: table,
-		actors: actors, nextToMove: ChanceId, causingAction: nil}
+	actors := map[acting.ActorID]acting.Actor{acting.PlayerA: playerA, acting.PlayerB: playerB, acting.ChanceId: chance}
+	pokerTable := &table.PokerTable{Pot: 0, Cards: []cards.Card{}}
+	return &RIGameState{round: rounds.Start, table: pokerTable,
+		actors: actors, nextToMove: acting.ChanceId, causingAction: nil}
 }
 
-func createChild(blueprint *RIGameState, round Round, action Action, nextToMove ActorID, terminal bool) *RIGameState {
+func createChild(blueprint *RIGameState, round rounds.PokerRound, action acting.Action, nextToMove acting.ActorID, terminal bool) *RIGameState {
 	c := RIGameState{round: round,
 		parent: blueprint, causingAction: action, terminal: terminal,
 		table: blueprint.table.Clone(), actors: cloneActorsMap(blueprint.actors), nextToMove: nextToMove}
 	return &c
 }
 
-func (state *RIGameState) dealPublicCard(card *Card) *RIGameState {
+func (state *RIGameState) dealPublicCard(card *cards.Card) *RIGameState {
 
-	c := createChild(state, state.round.NextRound(), DealPublicCardAction{card}, PlayerA, false)
+	c := createChild(state, state.round.NextRound(), DealPublicCardAction{card}, acting.PlayerA, false)
 	// important to deal using child deck / not current chance deck
 	c.table.DropPublicCard(card)
-	c.actors[ChanceId].(*Chance).deck.RemoveCard(card)
+	c.actors[acting.ChanceId].(*Chance).deck.RemoveCard(card)
 	return c
 }
 
-func (state *RIGameState) dealPrivateCards(cardA *Card, cardB *Card) *RIGameState {
+func (state *RIGameState) dealPrivateCards(cardA *cards.Card, cardB *cards.Card) *RIGameState {
 
-	c := createChild(state, state.round.NextRound(), DealPrivateCardsAction{cardA, cardB}, PlayerA, false)
+	c := createChild(state, state.round.NextRound(), DealPrivateCardsAction{cardA, cardB}, acting.PlayerA, false)
 	// important to deal using child deck / not current chance deck
-	c.playerActor(PlayerA).PlaceBet(c.table, Ante)
-	c.actors[PlayerB].(*Player).PlaceBet(c.table, Ante)
-	c.playerActor(PlayerA).CollectPrivateCard(cardA)
-	c.actors[PlayerB].(*Player).CollectPrivateCard(cardB)
-	c.actors[ChanceId].(*Chance).deck.RemoveCard(cardA)
-	c.actors[ChanceId].(*Chance).deck.RemoveCard(cardB)
+	c.playerActor(acting.PlayerA).PlaceBet(c.table, Ante)
+	c.actors[acting.PlayerB].(*Player).PlaceBet(c.table, Ante)
+	c.playerActor(acting.PlayerA).CollectPrivateCard(cardA)
+	c.actors[acting.PlayerB].(*Player).CollectPrivateCard(cardB)
+	c.actors[acting.ChanceId].(*Chance).deck.RemoveCard(cardA)
+	c.actors[acting.ChanceId].(*Chance).deck.RemoveCard(cardB)
 
 	return c
 }
 
-func (state *RIGameState) chanceActions(chance *Chance) []Action {
-	if state.round == Start {
+func (state *RIGameState) chanceActions(chance *Chance) []acting.Action {
+	if state.round == rounds.Start {
 		deckSize := int(chance.deck.CardsLeft())
-		actions := make([]Action, deckSize*(deckSize-1))
+		actions := make([]acting.Action, deckSize*(deckSize-1))
 		i := 0
 		remainingCards := chance.deck.RemainingCards()
 		for _, cardA := range remainingCards {
@@ -243,7 +257,7 @@ func (state *RIGameState) chanceActions(chance *Chance) []Action {
 		return actions
 	}
 
-	actions := make([]Action, chance.deck.CardsLeft())
+	actions := make([]acting.Action, chance.deck.CardsLeft())
 	remainingCards := chance.deck.RemainingCards()
 	for i, card := range remainingCards {
 		actions[i] = DealPublicCardAction{card}
@@ -251,10 +265,10 @@ func (state *RIGameState) chanceActions(chance *Chance) []Action {
 	return actions
 }
 
-func (state *RIGameState) playerActions(player *Player) []Action {
+func (state *RIGameState) playerActions(player *Player) []acting.Action {
 
-	if state.causingAction.Name() == Fold {
-		player.Actions = []Action{}
+	if state.causingAction.Name() == acting.Fold {
+		player.Actions = []acting.Action{}
 		return player.Actions
 	}
 
@@ -266,15 +280,15 @@ func (state *RIGameState) playerActions(player *Player) []Action {
 	canRaise := (player.Stack >= 2*bet) && (opponentStack >= 2*bet)
 
 	// whenever betting roung is over (CALL OR CHECK->CHECK)
-	bettingRoundEnded := state.causingAction.Name() == Call || (state.causingAction.Name() == Check && state.parent.causingAction.Name() == Check)
+	bettingRoundEnded := state.causingAction.Name() == acting.Call || (state.causingAction.Name() == acting.Check && state.parent.causingAction.Name() == acting.Check)
 	if bettingRoundEnded {
-		player.Actions = []Action{}
+		player.Actions = []acting.Action{}
 		return player.Actions
 	}
 
 	// single check implies BET or CHECK
-	if state.causingAction.Name() == Check && state.parent.causingAction.Name() != Check {
-		player.Actions = []Action{CheckAction}
+	if state.causingAction.Name() == acting.Check && state.parent.causingAction.Name() != acting.Check {
+		player.Actions = []acting.Action{CheckAction}
 		if canBet {
 			player.Actions = append(player.Actions, BetAction)
 		}
@@ -282,8 +296,8 @@ func (state *RIGameState) playerActions(player *Player) []Action {
 	}
 
 	// RAISE/BET, you can CALL FOLD or RAISE (unless there has been 6 prior raises - 3 for each player)
-	if state.causingAction.Name() == Bet || state.causingAction.Name() == Raise {
-		player.Actions = []Action{CallAction, FoldAction}
+	if state.causingAction.Name() == acting.Bet || state.causingAction.Name() == acting.Raise {
+		player.Actions = []acting.Action{CallAction, FoldAction}
 		priorRaisesInCurrentRound := countPriorRaisesPerRound(state, state.round)
 		if priorRaisesInCurrentRound < MaxRaises && canRaise {
 			player.Actions = append(player.Actions, RaiseAction)
@@ -291,8 +305,8 @@ func (state *RIGameState) playerActions(player *Player) []Action {
 		return player.Actions
 	}
 
-	if state.causingAction.Name() == DealPrivateCards || state.causingAction.Name() == DealPublicCards {
-		player.Actions = []Action{CheckAction}
+	if state.causingAction.Name() == acting.DealPrivateCards || state.causingAction.Name() == acting.DealPublicCards {
+		player.Actions = []acting.Action{CheckAction}
 		if canBet {
 			player.Actions = append(player.Actions, BetAction)
 		}
@@ -301,10 +315,10 @@ func (state *RIGameState) playerActions(player *Player) []Action {
 	panic(errors.New("code not reachable"))
 }
 
-func (state *RIGameState) playerActor(id ActorID) *Player {
+func (state *RIGameState) playerActor(id acting.ActorID) *Player {
 	return state.actors[id].(*Player)
 }
 
 func (state *RIGameState) chanceActor() *Chance {
-	return state.actors[ChanceId].(*Chance)
+	return state.actors[acting.ChanceId].(*Chance)
 }
