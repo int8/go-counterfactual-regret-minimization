@@ -66,25 +66,19 @@ func (state *KuhnGameState) CurrentActor() acting.Actor {
 func (state *KuhnGameState) Evaluate() float32 {
 	currentActor := state.playerActor(state.CurrentActor().GetID())
 	currentActorOpponent := state.playerActor(-state.CurrentActor().GetID())
-	if state.IsTerminal() {
-		if state.causingAction.Name() == acting.Fold {
-			currentActor.UpdateStack(currentActor.Stack + state.table.Pot)
-			return float32(currentActor.GetID()) * (state.table.Pot / 2)
-		}
-		currentActorHandValue := currentActor.EvaluateHand(state.table)
-		currentActorOpponentHandValue := currentActorOpponent.EvaluateHand(state.table)
-
-		if currentActorHandValue > currentActorOpponentHandValue {
-			currentActor.UpdateStack(currentActor.Stack + state.table.Pot)
-			return float32(currentActor.GetID()) * (state.table.Pot / 2)
-		} else {
-			currentActorOpponent.UpdateStack(currentActorOpponent.Stack + state.table.Pot)
-			return float32(currentActorOpponent.GetID()) * (state.table.Pot / 2)
-		}
+	if state.causingAction.Name() == acting.Fold {
+		currentActor.UpdateStack(currentActor.Stack + state.table.Pot)
+		return float32(currentActor.GetID()) * (state.table.Pot / 2)
 	}
-	currentActor.UpdateStack(currentActor.Stack + state.table.Pot/2)
-	currentActorOpponent.UpdateStack(currentActorOpponent.Stack + state.table.Pot/2)
-	return 0.0
+	currentActorHandValue := currentActor.EvaluateHand(state.table)
+	currentActorOpponentHandValue := currentActorOpponent.EvaluateHand(state.table)
+	if currentActorHandValue > currentActorOpponentHandValue {
+		currentActor.UpdateStack(currentActor.Stack + state.table.Pot)
+		return float32(currentActor.GetID()) * (state.table.Pot / 2)
+	} else {
+		currentActorOpponent.UpdateStack(currentActorOpponent.Stack + state.table.Pot)
+		return float32(currentActorOpponent.GetID()) * (state.table.Pot / 2)
+	}
 }
 
 func (state *KuhnGameState) InformationSet() games.InformationSet {
@@ -142,7 +136,7 @@ func (state *KuhnGameState) actAsPlayer(action acting.Action) games.GameState {
 		}
 		if action.Name() == acting.Fold {
 			//opponent of folding player can now take his bet back
-			child.actors[state.CurrentActor().(*Player).Opponent()].(*Player).PlaceBet(child.table, -BetSize)
+			child.actors[actor.(*Player).Opponent()].(*Player).PlaceBet(child.table, -BetSize)
 		}
 	}()
 
@@ -151,21 +145,18 @@ func (state *KuhnGameState) actAsPlayer(action acting.Action) games.GameState {
 		return child
 	}
 
-	child = createChild(state, state.round, action, state.CurrentActor().(*Player).Opponent(), false)
+	child = createChild(state, state.round, action, actor.(*Player).Opponent(), false)
 	return child
 }
 
-func (state *KuhnGameState) betSize() float32 {
-	return 1.0
-}
 
 func Root(playerA *Player, playerB *Player) *KuhnGameState {
 	chance := &Chance{id: acting.ChanceId, deck: CreateKuhnDeck()}
 
 	actors := map[acting.ActorID]acting.Actor{acting.PlayerA: playerA, acting.PlayerB: playerB, acting.ChanceId: chance}
-	table := &table.PokerTable{Pot: 0, Cards: []cards.Card{}}
+	pokerTable := &table.PokerTable{Pot: 0, Cards: []cards.Card{}}
 
-	return &KuhnGameState{round: rounds.Start, table: table,
+ 	return &KuhnGameState{round: rounds.Start, table: pokerTable,
 		actors: actors, nextToMove: acting.ChanceId, causingAction: nil}
 }
 
@@ -218,9 +209,9 @@ func (state *KuhnGameState) playerActions(player *Player) []acting.Action {
 		return player.Actions
 	}
 
-	betSize := state.betSize()
+
 	opponentStack := state.stack(player.Opponent())
-	allowedToBet := (player.Stack >= betSize) && (opponentStack >= betSize)
+	allowedToBet := (player.Stack >= BetSize) && (opponentStack >= BetSize)
 
 	// whenever betting round is over (CALL OR CHECK->CHECK)
 	bettingRoundEnded := state.causingAction.Name() == acting.Call || (state.causingAction.Name() == acting.Check && state.parent.causingAction.Name() == acting.Check)

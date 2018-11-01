@@ -12,8 +12,8 @@ import (
 const PreFlopBetSize float32 = 10.
 const PostFlopBetSize float32 = 20.
 
-const InformationSetSize = 8 * 8
-const InformationSetSizeBytes = 8
+const InformationSetSize = 8 * 12
+const InformationSetSizeBytes = 12
 
 var MaxRaises = 3
 

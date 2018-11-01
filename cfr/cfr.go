@@ -4,9 +4,71 @@ import (
 	"github.com/int8/go-counterfactual-regret-minimization/acting"
 	"github.com/int8/go-counterfactual-regret-minimization/games"
 	"math/rand"
+	"sync"
 )
 
-type StrategyMap map[games.InformationSet]map[acting.ActionName]float32
+type StrategyMap struct {
+	Value map[games.InformationSet]map[acting.ActionName]float32
+	mutex *sync.Mutex
+}
+
+func newStrategyMap() StrategyMap {
+	return StrategyMap{Value: map[games.InformationSet]map[acting.ActionName]float32{}, mutex: &sync.Mutex{}}
+}
+
+func (sm StrategyMap) initIfZero(infSet games.InformationSet) {
+	if _, ok := sm.Value[infSet]; !ok {
+		sm.Value[infSet] = map[acting.ActionName]float32{}
+	}
+}
+
+func (sm StrategyMap) hasValue(infSet games.InformationSet) bool {
+	sm.mutex.Lock()
+	defer sm.mutex.Unlock()
+	_, ok := sm.Value[infSet]
+	return ok
+}
+
+func (sm StrategyMap) setValue(infSet games.InformationSet, action acting.ActionName, value float32) {
+	sm.mutex.Lock()
+	defer sm.mutex.Unlock()
+	sm.initIfZero(infSet)
+	sm.Value[infSet][action] = value
+}
+
+func (sm StrategyMap) getValue(infSet games.InformationSet, action acting.ActionName) float32 {
+	sm.mutex.Lock()
+	defer sm.mutex.Unlock()
+	sm.initIfZero(infSet)
+	return sm.Value[infSet][action]
+}
+
+func (sm StrategyMap) getKeys(infSet games.InformationSet) []acting.ActionName {
+	sm.mutex.Lock()
+	defer sm.mutex.Unlock()
+	actions := []acting.ActionName{}
+	for action := range sm.Value[infSet] {
+		actions = append(actions, action)
+	}
+	return actions
+}
+
+func (sm StrategyMap) nrOfInfSets() int {
+	sm.mutex.Lock()
+	defer sm.mutex.Unlock()
+	return len(sm.Value)
+}
+
+
+func (sm StrategyMap) sumValuesForInformationSet(infSet games.InformationSet) float32 {
+	sm.mutex.Lock()
+	defer sm.mutex.Unlock()
+	regretSum := float32(0.)
+	for _, k := range sm.Value[infSet] {
+		regretSum += maxFloat32(k, 0.0)
+	}
+	return regretSum
+}
 
 type ComputingRoutine struct {
 	sigmaSum   StrategyMap
@@ -15,57 +77,55 @@ type ComputingRoutine struct {
 	root       games.GameState
 }
 
-
 func CreateComputingRoutine(root games.GameState) *ComputingRoutine {
-	routine := ComputingRoutine{root: root, regretsSum: StrategyMap{}, sigma: StrategyMap{}, sigmaSum: StrategyMap{}}
+	routine := ComputingRoutine{root: root, regretsSum: newStrategyMap(), sigma: newStrategyMap(), sigmaSum: newStrategyMap()}
 	return &routine
 }
 
 func (routine *ComputingRoutine) cumulateCfrRegret(infSet games.InformationSet, action acting.ActionName, value float32) {
-	if _, ok := routine.regretsSum[infSet]; !ok {
-		routine.regretsSum[infSet] = map[acting.ActionName]float32{}
-	}
-	routine.regretsSum[infSet][action] += value
+	currentValue := routine.regretsSum.getValue(infSet, action)
+	routine.regretsSum.setValue(infSet, action, currentValue + value)
 }
 
 func (routine *ComputingRoutine) cumulateSigma(infSet games.InformationSet, action acting.ActionName, value float32) {
-	if _, ok := routine.sigmaSum[infSet]; !ok {
-		routine.sigmaSum[infSet] = map[acting.ActionName]float32{}
-	}
-	routine.sigmaSum[infSet][action] += value
+	currentValue := routine.sigmaSum.getValue(infSet, action)
+	routine.sigmaSum.setValue(infSet, action, currentValue + value)
 }
 
-func (routine *ComputingRoutine) ComputeNashEquilibriumViaCFR(iterations int) StrategyMap {
+func (routine *ComputingRoutine) ComputeNashEquilibriumViaCFR(iterations int, numThreads int) StrategyMap {
 
-	for i := 0; i < iterations; i++ {
-		routine.cfrUtilityRecursive(routine.root, 1, 1)
+	for i := 0; i < iterations / numThreads; i++ {
+		group := &sync.WaitGroup{}
+		for j := 0; j < numThreads; j++ {
+			group.Add(1)
+			go func() {
+				routine.cfrUtilityRecursive(routine.root, 1, 1)
+				group.Done()
+			}()
+		}
+		group.Wait()
 	}
 	return routine.computeNashEquilibriumBasedOnStrategySum()
 }
 
 func (routine *ComputingRoutine) updateSigma(infSet games.InformationSet) {
-	if _, ok := routine.sigma[infSet]; !ok {
-		routine.sigma[infSet] = map[acting.ActionName]float32{}
-	}
 
-	regretSum := float32(0.)
-	for _, k := range routine.regretsSum[infSet] {
-		regretSum += maxFloat32(k, 0.0)
-	}
-	for action := range routine.regretsSum[infSet] {
+	regretSum := routine.regretsSum.sumValuesForInformationSet(infSet)
+	actions := routine.regretsSum.getKeys(infSet)
+	for _, action := range actions {
 		if regretSum > 0.0 {
-			routine.sigma[infSet][action] = maxFloat32(routine.regretsSum[infSet][action], 0.0) / regretSum
+			routine.sigma.setValue(infSet, action, maxFloat32(routine.regretsSum.getValue(infSet, action), 0.0) / regretSum)
 		} else {
-			routine.sigma[infSet][action] = 1. / float32(len(routine.regretsSum[infSet]))
+			routine.sigma.setValue(infSet, action, 1. / float32(len(actions)))
 		}
 	}
 }
 
 func (routine *ComputingRoutine) actionProbability(infSet games.InformationSet, action acting.ActionName, nrOfActions int) float32 {
-	if _, ok := routine.sigma[infSet]; !ok {
+	if !routine.sigma.hasValue(infSet) {
 		return 1. / float32(nrOfActions)
 	}
-	return routine.sigma[infSet][action]
+	return routine.sigma.getValue(infSet, action)
 }
 
 func (routine *ComputingRoutine) cfrUtilityRecursive(state games.GameState, reachA float32, reachB float32) float32 {
@@ -109,15 +169,16 @@ func (routine *ComputingRoutine) cfrUtilityRecursive(state games.GameState, reac
 	}
 
 	for _, action := range actions {
-		if cfrReach != 0 {
+		if cfrReach > 0 {
 			actionCfrRegret := float32(state.CurrentActor().GetID()) * cfrReach * (childrenStateUtilities[action.Name()] - value)
 			routine.cumulateCfrRegret(infSet, action.Name(), actionCfrRegret)
 		}
-		if reach != 0 {
+		if reach > 0 {
 			routine.cumulateSigma(infSet, action.Name(), reach*routine.actionProbability(infSet, action.Name(), len(actions)))
 		}
 	}
-	if reach != 0 {
+
+	if cfrReach > 0 {
 		routine.updateSigma(infSet)
 	}
 
@@ -125,16 +186,16 @@ func (routine *ComputingRoutine) cfrUtilityRecursive(state games.GameState, reac
 }
 
 func (routine *ComputingRoutine) computeNashEquilibriumBasedOnStrategySum() StrategyMap {
-	nashEquilibrium := StrategyMap{}
-	for infSet := range routine.sigmaSum {
-		nashEquilibrium[infSet] = map[acting.ActionName]float32{}
+	nashEquilibrium := newStrategyMap()
+	for infSet := range routine.sigmaSum.Value {
+		nashEquilibrium.Value[infSet] = map[acting.ActionName]float32{}
 		infSetSigmaSum := float32(0.0)
-		for action := range routine.sigmaSum[infSet] {
-			infSetSigmaSum += routine.sigmaSum[infSet][action]
+		for action := range routine.sigmaSum.Value[infSet] {
+			infSetSigmaSum += routine.sigmaSum.Value[infSet][action]
 		}
 
-		for action := range routine.sigmaSum[infSet] {
-			nashEquilibrium[infSet][action] = routine.sigmaSum[infSet][action] / infSetSigmaSum
+		for action := range routine.sigmaSum.Value[infSet] {
+			nashEquilibrium.Value[infSet][action] = routine.sigmaSum.Value[infSet][action] / infSetSigmaSum
 		}
 	}
 	return nashEquilibrium
@@ -160,7 +221,8 @@ func computeUtility(state games.GameState, sigma StrategyMap) float32 {
 	value := float32(0.0)
 	actions := state.Actions()
 	for _, action := range actions {
-		value += sigma[infSet][action.Name()] * computeUtility(state.Act(action), sigma)
+		value += sigma.Value[infSet][action.Name()] * computeUtility(state.Act(action), sigma)
 	}
+
 	return value
 }
