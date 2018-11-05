@@ -53,7 +53,7 @@ func main() {
 	playerB := &rhodeisland.Player{Id: acting.PlayerB, Actions: nil, Card: nil, Stack: 1000.}
 	root := rhodeisland.Root(playerA, playerB, cards.CreateLimitedDeck(cards.C10, true))
 	routine := cfr.CreateComputingRoutine(root)
-	ne := routine.ComputeNashEquilibriumViaCFR(100000,  8)
+	ne := routine.ComputeNashEquilibriumViaCFR(10000,  8) # 10k is too small for sure 
 	for infSet := range ne.Value {
 		fmt.Println(rhodeisland.PrettyPrintInformationSet(infSet), ne.Value[infSet])
 	}
