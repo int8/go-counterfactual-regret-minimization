@@ -1,12 +1,10 @@
 package cfr
 
 import (
-	"encoding/gob"
 	"github.com/int8/go-counterfactual-regret-minimization/acting"
 	"github.com/int8/go-counterfactual-regret-minimization/cards"
 	"github.com/int8/go-counterfactual-regret-minimization/games/kuhn"
 	"github.com/int8/go-counterfactual-regret-minimization/games/rhodeisland"
-	"os"
 	"testing"
 )
 
@@ -27,7 +25,7 @@ func TestRhodeISlandPokerNashEquilibrium(t *testing.T) {
 	rhodeisland.MaxRaises = 0
 	root := createRootForRhodeIslandPokerTest(1000., 1000.)
 	routine := CreateComputingRoutine(root)
-	routine.ComputeNashEquilibriumViaCFR(5000, 8)
+	routine.ComputeNashEquilibriumViaCFR(100, 8)
 }
 
 func createRootForKuhnPokerTest(playerAStack float32, playerBStack float32) *kuhn.KuhnGameState {
@@ -40,30 +38,4 @@ func createRootForRhodeIslandPokerTest(playerAStack float32, playerBStack float3
 	playerA := &rhodeisland.Player{Id: acting.PlayerA, Actions: nil, Card: nil, Stack: playerAStack}
 	playerB := &rhodeisland.Player{Id: acting.PlayerB, Actions: nil, Card: nil, Stack: playerBStack}
 	return rhodeisland.Root(playerA, playerB, cards.CreateLimitedDeck(cards.C10, true))
-}
-
-func writeGob(filePath string, object interface{}) error {
-	file, err := os.Create(filePath)
-	if err == nil {
-		encoder := gob.NewEncoder(file)
-		encoder.Encode(object)
-	}
-	file.Close()
-	return err
-}
-
-func readGob(filePath string, object interface{}) error {
-	file, err := os.Open(filePath)
-	if err == nil {
-		decoder := gob.NewDecoder(file)
-		err = decoder.Decode(object)
-	}
-	file.Close()
-	return err
-}
-
-func readNashEquilibriumFromGob(filePath string) *StrategyMap {
-	ne := new(StrategyMap)
-	readGob(filePath, ne)
-	return ne
 }
