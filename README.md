@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/int8/go-counterfactual-regret-minimization.svg?branch=master)](https://travis-ci.org/int8/go-counterfactual-regret-minimization)
+
 ## Counterfactual regret minimization in Go  
 
 
